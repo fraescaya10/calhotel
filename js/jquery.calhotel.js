@@ -96,13 +96,13 @@
             for(var i=0 ; i <datos.num_fila;i++){
                 f+="<tr class='filatbl'> " +
                 "<td class='celcab celroom'>Room "+(i+1)+"</td>" +
+                "<td class='celda' id='ct"+(i+1)+"0'></td>" +
                 "<td class='celda' id='ct"+(i+1)+"1'></td>" +
                 "<td class='celda' id='ct"+(i+1)+"2'></td>" +
                 "<td class='celda' id='ct"+(i+1)+"3'></td>" +
                 "<td class='celda' id='ct"+(i+1)+"4'></td>" +
                 "<td class='celda' id='ct"+(i+1)+"5'></td>" +
                 "<td class='celda' id='ct"+(i+1)+"6'></td>" +
-                "<td class='celda' id='ct"+(i+1)+"7'></td>" +
                 "</tr>"
             }
             tbody += f + "</tbody>";
