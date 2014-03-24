@@ -3,6 +3,8 @@
     //"use strict";
     moment.lang('es');
     c=0;
+    fechaInic=null;
+    fechaFin=null;
     //Configuraciones por defecto
     config_default = {
         num_fila: 5,
@@ -143,6 +145,8 @@
         var fecha = moment().add('week', incdec);
         var iniSem = moment(fecha).startOf('week');//Inicia semana
         var finSem = moment(fecha).endOf('week');//Finaliza semana
+        fechaInic= iniSem;
+        fechaFin = finSem;
         if (moment(iniSem).month()===moment(finSem).month()) {
             return iniSem.format('MMMM D')+' - '+finSem.format('D');
         }else{
@@ -163,22 +167,27 @@
     }
 
     function ponerCuartosOcupados() {
-        //if (test) {
-        //    //code
-        //}
-        
         var daticos = config_default.datosroom;
         for(d in daticos){
-            console.log(daticos[d].color);
             var div = $('.cue-content').find('#ct'+daticos[d].cuartonro+moment(daticos[d].fecha_inicia).weekday());
-            div.css({
-                border: '1px solid green',
-                borderRadius: '5px',
-                boxShadow: '3px 3px 3px 3px rgba(0,0,0,0.3)',
-                backgroundColor: daticos[d].color===undefined ? 'cyan':daticos[d].color 
-            });
-            div.find('p').html('</br>'+daticos[d].nombre_persona);
+            if (moment(daticos[d].fecha_inicia)>=fechaInic && moment(daticos[d].fecha_inicia)<=fechaFin) {
+                div.css({
+                    border: '1px solid green',
+                    borderRadius: '5px',
+                    boxShadow: '3px 3px 3px 3px rgba(0,0,0,0.3)',
+                    backgroundColor: daticos[d].color===undefined ? 'cyan':daticos[d].color 
+                });
+                div.find('p').html('</br>'+daticos[d].nombre_persona);
+            }else{
+                div.css({
+                    border: 'none',
+                    borderRadius: 'none',
+                    boxShadow: 'none',
+                    backgroundColor: ''
+                });
+                div.find('p').html('');
+            }
+           
         }
-       
     }
 })(jQuery);
