@@ -2,97 +2,61 @@
 /*
 Tabla de botones
 */
-
-#tit_tabla h1 {
-
+#tit_tabla h1{
     font-size: 2em;
-
 }
-
-.tbl-botones {
-
+.tbl-botones{
     margin: 0 auto;
-
     width: 100%;
-
-    text-align: center;
-
+    text-align:center;
+}
+#btns_izq, #btns_der{
+    width:25%;
 }
 
-#btns_izq,
-
-#btns_der {
-
-    width: 25%;
-
-}
 
 /*contenedor de todo el calendario*/
-
-.calhotel {
-
+.calhotel{
     margin: 25px;
-
 }
 
 /*Cabecera de la tabla*/
-
-.cab-content {
-
+.cab-content{
     border: 1px solid #9FD2E5;
-
 }
-
 /*Cuerpo de la tabla*/
-
-.cue-content {
-
+.cue-content{
     height: 460px;
-
     position: absolute;
-
     overflow: auto;
-
 }
 
-.filatbl .celroom {
-
+.filatbl .celroom{
     font-weight: normal;
-
 }
-
 /* Ancho alto de celdas normales y de cabecera*/
-
-.celda,
-
-.celcab {
-
+.celda, .celcab{
     width: 180px;
-
     text-align: center;
-
 }
 
 /*Altura de celdas de la tabla*/
-
-.celda,
-
-.filatbl .celroom {
-
+.celda, .filatbl .celroom{
     height: 100px;
-
     border: 1px solid #9FD2E5;
-
 }
-
 /*Anchura de las celdas room*/
-
-.celroom,
-
-.filasup .celroom {
-
+.celroom, .filasup .celroom{
     width: 80px;
-
     text-align: left;
-
 }
+
+
+
+
+
+
+
+
+
+
