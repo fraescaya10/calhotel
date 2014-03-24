@@ -1,5 +1,5 @@
 $(document).ready(function() {
     $('.calhotel').calhotel({
-        num_fila: 150
+        num_fila: 8
     });
 });
