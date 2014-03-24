@@ -96,3 +96,11 @@ Tabla de botones
     text-align: left;
 
 }
+.evento{
+    
+    height: 80px;
+    margin: auto;
+    width: 145px;
+    z-index: 5;
+}
+
