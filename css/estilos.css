@@ -45,8 +45,16 @@
 }
 .evento{
     margin: auto;
+    opacity: 0.75;
     z-index: 30;
 }
 .evento p, .evento h1{
     font-size: 1em;
 }
+/*elemento {*/
+/*    position: absolute;*/
+/*    top: 440px;*/
+/*    left: 261px;*/
+/*    width: 69.65px;*/
+/*    height: 82px;*/
+/*}*/

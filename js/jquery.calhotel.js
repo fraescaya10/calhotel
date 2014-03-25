@@ -33,7 +33,7 @@
         
     };
     
-    
+    //con esto se llama desde javascript
     $.fn.calhotel = function (config_usuario) {
         config_default = $.extend(config_default, config_usuario);
         this.each(function () {
@@ -49,29 +49,43 @@
             
             cont.append(contenedor_principal);
             ponerCuartosOcupados();
-            $('#btnsig').click(function(e){
+            desactivaboton($('#btnhoy'));
+            $('#btnsig').click(function(e){                
                 c++;
                 $('#titFecha').text(devuelveSemana(c));
                 actualizaCabeceras(primerdia(c));
                 ponerCuartosOcupados();
+                desactivaboton($('#btnhoy'));
             });
             
-            $('#btnant').click(function(e){
+            $('#btnant').click(function(e){                
                 c--;
                 $('#titFecha').text(devuelveSemana(c));
                 actualizaCabeceras(primerdia(c));
                 ponerCuartosOcupados();
+                desactivaboton($('#btnhoy'));
             });
             
             $('#btnhoy').click(function(e){
+                
                 c=0;
                 $('#titFecha').text(devuelveSemana(c));
                 actualizaCabeceras(primerdia(c));
                 ponerCuartosOcupados();
+                desactivaboton($('#btnhoy'));
             });
         });
     };
     
+    function desactivaboton(btn) {
+        var hoy = moment();
+        if (hoy>=fechaInic && hoy <=fechaFin) {
+            $(btn).attr("disabled", true);
+        }else{
+            $(btn).attr("disabled", false);
+        }
+        
+    }
     function vistaAgenda (datos) {
         this.creaContenido = creaContenido;
         
@@ -178,10 +192,14 @@
     function ponerCuartosOcupados() {
         var daticos = config_default.datosroom;
         for(d in daticos){
-            var celda = $('.tbl-cuerpo').find('#ct'+daticos[d].cuartonro+moment(daticos[d].fecha_inicia).weekday());
+            var celda = $('.tbl-cuerpo').find('#ct'+daticos[d].cuartonro+''+moment(daticos[d].fecha_inicia).weekday());
             if (moment(daticos[d].fecha_inicia)>=fechaInic && moment(daticos[d].fecha_inicia)<=fechaFin) {
-                remuevediv(celda);//remueve posibles divs anteriores
+                var diactual = moment(daticos[d].fecha_inicia);
+                var diafinocup = moment(daticos[d].fecha_fin);
+                
+                //remuevediv(celda);//remueve posibles divs anteriores si se desactiva pueden haber varios campos en una celda
                 celda.append(creadiv(daticos, d));//agrega los nuevos divs
+                
             }else{
                 remuevediv(celda);
             }
@@ -191,11 +209,14 @@
     function creadiv(datos, i) {
         var div = $("<div class='evento'><h5></h5><p></p></div>");
         div.css({
-            border: '1px solid green',
+            border: '1px solid gray',
             borderRadius: '5px',
             boxShadow: '1px 1px 1px 1px rgba(0,0,0,0.3)',
             backgroundColor: datos[i].color===undefined ? 'cyan':datos[i].color,
-            width: '80%'
+            width: '10em',
+            cursor:'pointer'
+        }).click(function(ev){
+            clickdiv(datos, i);
         });
         //.addClass('draggable')
         div.find('h5').html('HH:mm');
@@ -207,5 +228,8 @@
         celda.find('div').remove();
     }
     
-    
+    function clickdiv(datos, i){
+        //console.log(datos[i].nombre_persona);
+        alert(datos[i].nombre_persona);
+    }
 })(jQuery);

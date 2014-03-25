@@ -10,19 +10,19 @@ $(document).ready(function() {
             },
             {fecha_inicia: moment('2014-03-25'), //obligatorio
                 fecha_fin: moment('2014-03-25'), //obligatorio
-                cuartonro: 2,//obligatorio
+                cuartonro: 1,//obligatorio
                 nombre_persona: 'Sr. Almeida',//obligatorio
                 color:'red'
             },
             {fecha_inicia: moment('2014-03-25'), //obligatorio
                 fecha_fin: moment('2014-03-25'), //obligatorio
-                cuartonro: 3,//obligatorio
+                cuartonro: 1,//obligatorio
                 nombre_persona: 'Sr. Vargas',//obligatorio
                 color:'blue'
             }
             
         ]
     });
-    $( ".draggable" ).draggable();
+    
 });
 
