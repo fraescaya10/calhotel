@@ -6,20 +6,23 @@ $(document).ready(function() {
                 fecha_fin: moment('2014-03-25'), //obligatorio
                 cuartonro: 1,//obligatorio
                 nombre_persona: 'Sr. Lopez',//obligatorio
+                color:'yellow'
             },
             {fecha_inicia: moment('2014-03-25'), //obligatorio
                 fecha_fin: moment('2014-03-25'), //obligatorio
-                cuartonro: 1,//obligatorio
+                cuartonro: 2,//obligatorio
                 nombre_persona: 'Sr. Almeida',//obligatorio
                 color:'red'
             },
-            {fecha_inicia: moment('2014-04-02'), //obligatorio
-                fecha_fin: moment('2014-04-02'), //obligatorio
-                cuartonro: 5,//obligatorio
+            {fecha_inicia: moment('2014-03-25'), //obligatorio
+                fecha_fin: moment('2014-03-25'), //obligatorio
+                cuartonro: 3,//obligatorio
                 nombre_persona: 'Sr. Vargas',//obligatorio
-                color:'red'
+                color:'blue'
             }
             
         ]
     });
+    $( ".draggable" ).draggable();
 });
+

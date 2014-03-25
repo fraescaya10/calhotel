@@ -105,10 +105,6 @@
         }
 
         function creaTabla(primerdia) {
-            //var tabla = "<div class='contenedor-tabla'><table class='tbldiasAgenda'>" +
-            //    creaCabeceraTbl(primerdia) +
-            //    creaCuerpoTbl() +
-            //    "</table></div>";
             var tabla = "<div class='contenedor-tabla'>" +
             " <div class='tbl-cabecera'>" +
             creaCabeceraTbl(primerdia) +
@@ -139,13 +135,13 @@
             for(var i=0 ; i <datos.num_fila;i++){
                 f+="<tr class='filatbl' id='fila"+(i+1)+"'> " +
                 "<td class='celcab celroom'>Room "+(i+1)+"</td>" +
-                "<td class='celda'><div class='evento' id='ct"+(i+1)+"0'><p></p></div></td>" +
-                "<td class='celda'><div class='evento' id='ct"+(i+1)+"1'><p></p></div></td>" +
-                "<td class='celda'><div class='evento' id='ct"+(i+1)+"2'><p></p></div></td>" +
-                "<td class='celda'><div class='evento' id='ct"+(i+1)+"3'><p></p></div></td>" +
-                "<td class='celda'><div class='evento' id='ct"+(i+1)+"4'><p></p></div></td>" +
-                "<td class='celda'><div class='evento' id='ct"+(i+1)+"5'><p></p></div></td>" +
-                "<td class='celda'><div class='evento' id='ct"+(i+1)+"6'><p></p></div></td>" +
+                "<td class='celda' id='ct"+(i+1)+"0'></td>" +
+                "<td class='celda' id='ct"+(i+1)+"1'></td>" +
+                "<td class='celda' id='ct"+(i+1)+"2'></td>" +
+                "<td class='celda' id='ct"+(i+1)+"3'></td>" +
+                "<td class='celda' id='ct"+(i+1)+"4'></td>" +
+                "<td class='celda' id='ct"+(i+1)+"5'></td>" +
+                "<td class='celda' id='ct"+(i+1)+"6'></td>" +
                 "</tr>";
             }
             tbody += f + "</tbody></table>";
@@ -182,28 +178,34 @@
     function ponerCuartosOcupados() {
         var daticos = config_default.datosroom;
         for(d in daticos){
-            var div = $('.tbl-cuerpo').find('#ct'+daticos[d].cuartonro+moment(daticos[d].fecha_inicia).weekday());
+            var celda = $('.tbl-cuerpo').find('#ct'+daticos[d].cuartonro+moment(daticos[d].fecha_inicia).weekday());
             if (moment(daticos[d].fecha_inicia)>=fechaInic && moment(daticos[d].fecha_inicia)<=fechaFin) {
-                div.css({
-                    border: '1px solid green',
-                    borderRadius: '5px',
-                    boxShadow: '3px 3px 3px 3px rgba(0,0,0,0.3)',
-                    backgroundColor: daticos[d].color===undefined ? 'cyan':daticos[d].color,
-                    width: '80%'
-                });
-                div.find('p').html('</br>'+daticos[d].nombre_persona);
+                remuevediv(celda);//remueve posibles divs anteriores
+                celda.append(creadiv(daticos, d));//agrega los nuevos divs
             }else{
-                div.css({
-                    border: 'none',
-                    borderRadius: 'none',
-                    boxShadow: 'none',
-                    backgroundColor: ''
-                });
-                div.find('p').html('');
+                remuevediv(celda);
             }
         }
     }
     
+    function creadiv(datos, i) {
+        var div = $("<div class='evento'><h5></h5><p></p></div>");
+        div.css({
+            border: '1px solid green',
+            borderRadius: '5px',
+            boxShadow: '1px 1px 1px 1px rgba(0,0,0,0.3)',
+            backgroundColor: datos[i].color===undefined ? 'cyan':datos[i].color,
+            width: '80%'
+        });
+        //.addClass('draggable')
+        div.find('h5').html('HH:mm');
+        div.find('p').html(datos[i].nombre_persona);
+        return div;
+    }
+    
+    function remuevediv(celda){
+        celda.find('div').remove();
+    }
     
     
 })(jQuery);

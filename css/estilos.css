@@ -47,3 +47,6 @@
     margin: auto;
     z-index: 30;
 }
+.evento p, .evento h1{
+    font-size: 1em;
+}
