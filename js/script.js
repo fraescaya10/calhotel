@@ -1,6 +1,6 @@
 $(document).ready(function() {
     $('.calhotel').calhotel({
-        num_fila: 50,
+        num_fila: 8,
         datosroom:[
             {fecha_inicia: moment('2014-03-22'), //obligatorio
                 fecha_fin: moment('2014-03-22'), //obligatorio

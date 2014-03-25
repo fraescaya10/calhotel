@@ -1,106 +1,61 @@
-
+*{
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    font-size: 1em;
+}
 /*
 Tabla de botones
 */
 
 #tit_tabla h1 {
-
     font-size: 2em;
-
 }
 
 .tbl-botones {
-
-    margin: 0 auto;
-
     width: 100%;
-
-    text-align: center;
-
 }
 
-#btns_izq,
-
-#btns_der {
-
+#btns_izq, #btns_der {
     width: 25%;
-
 }
 
-/*contenedor de todo el calendario*/
-
-.calhotel {
-
-    margin: 25px;
-
+.calhotel{
+    margin: 2em auto;
 }
-
-/*Cabecera de la tabla*/
 
 .cab-content {
-
     border: 1px solid #9FD2E5;
-
+    display: block;
 }
-
-/*Cuerpo de la tabla*/
-
-.cue-content {
-
-    height: 460px;
-
-    position: absolute;
-
+.cue-content{
+    border: 1px solid #9FD2E5;
+    height: 30em;
+    display: block;
     overflow: auto;
-
 }
-
-.filatbl .celroom {
-
-    font-weight: normal;
-
-}
-
-/* Ancho alto de celdas normales y de cabecera*/
-
-.celda,
-
-.celcab {
-
-    width: 180px;
-
-    text-align: center;
-
-}
-
-/*Altura de celdas de la tabla*/
-
-.celda,
-
-.filatbl .celroom {
-
-    height: 100px;
-
+.celda, .filatbl .celroom{
     border: 1px solid #9FD2E5;
-
+    width: 10em;
+    height: 8em;
+}
+.celcab{
+    text-align: center;
+    width: 10em;
 }
 
-/*Anchura de las celdas room*/
-
-.celroom,
-
-.filasup .celroom {
-
-    width: 80px;
-
-    text-align: left;
-
+.filatbl .celroom{
+    width: 8em;
 }
+
+.filasup .celroom{
+    width: 6.2em;
+    font-size: 1em
+}
+
 .evento{
-    
-    height: 80px;
+    height: 80%;
+    width: 80%;
     margin: auto;
-    width: 145px;
-    z-index: 5;
+    z-index: 30;
 }
-
