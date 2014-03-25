@@ -4,58 +4,46 @@
     text-align: center;
     font-size: 1em;
 }
-/*
-Tabla de botones
-*/
 
-#tit_tabla h1 {
-    font-size: 2em;
+.contenedor-principal,.contenedor-secundario{
+    margin: 2em;
 }
 
-.tbl-botones {
+.tbl-botones, .contenedor-tabla,.tbldiasAgenda{
     width: 100%;
+    border: 1px solid #9FD2E5; /*Cambiar luego*/
 }
 
-#btns_izq, #btns_der {
-    width: 25%;
+.tbl-botones, .tbl-botones h1{
+    font-size: 1.5em;
 }
 
-.calhotel{
-    margin: 2em auto;
-}
-
-.cab-content {
-    border: 1px solid #9FD2E5;
-    display: block;
-}
-.cue-content{
-    border: 1px solid #9FD2E5;
+.tbl-cuerpo{
     height: 30em;
-    display: block;
-    overflow: auto;
+    overflow: auto;  
 }
-.celda, .filatbl .celroom{
-    border: 1px solid #9FD2E5;
-    width: 10em;
-    height: 8em;
+.tbl-cabecera{
+    overflow: hidden;
 }
-.celcab{
+
+.filatbl{
+    height: 10em;
+}
+.celda, .celcab {
     text-align: center;
-    width: 10em;
+    width: 13.5%;
+}
+.celda , .filatbl .celroom, .filasup{
+    border: 1px solid #9FD2E5;
 }
 
-.filatbl .celroom{
-    width: 8em;
+.celroom{
+    width: 6em;
 }
-
-.filasup .celroom{
-    width: 6.2em;
-    font-size: 1em
+.calcabvac{
+    width: 2em;
 }
-
 .evento{
-    height: 80%;
-    width: 80%;
     margin: auto;
     z-index: 30;
 }
