@@ -211,7 +211,7 @@
             border: '1px solid gray',
             borderRadius: '5px',
             boxShadow: '1px 1px 1px 1px rgba(0,0,0,0.3)',
-            backgroundColor: datos.color===undefined ? 'cyan':datos.color,
+            backgroundColor: datos.color===undefined ? 'red':datos.color, //color rojo para ocupado
             width: '10em',
             cursor:'pointer'
         })

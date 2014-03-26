@@ -5,18 +5,51 @@
     <meta charset="utf-8" />
     <title>Prueba Plugin</title>
     <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-    <link href="css/estilos.css" rel="stylesheet" type="text/css" />
-    <script src="js/jquery-1.10.2.min.js" type="text/javascript"></script>
+    <link href="css/calhotel.css" rel="stylesheet" type="text/css" />
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
     <script src="js/jquery-ui-1.10.4.custom.js" type="text/javascript"></script>
     <script src="js/moment-with-langs.min.js" type="text/javascript"></script>
     <script src="js/jquery.calhotel.js" type="text/javascript"></script>
-    <script src="js/script.js" type="text/javascript"></script>
     
 </head>
 
 <body>    
     <div class="calhotel">
     </div>
+    <script type="text/javascript">
+        $('.calhotel').calhotel({
+        num_fila: 10 ,
+        datosroom:[
+            {
+                fecha_inicia: moment('2014-03-25 10:40'), //obligatorio
+                fecha_fin: moment('2014-03-25 11:50'), //obligatorio
+                cuartonro: 1,//obligatorio
+                nombre_persona: 'Sr. Lopez',//obligatorio
+                color:'green'
+            },
+            {
+                fecha_inicia: moment('2014-03-28 07:00'), //obligatorio
+                fecha_fin: moment('2014-03-28 19:00'), //obligatorio
+                cuartonro: 2,//obligatorio
+                nombre_persona: 'Sr. Almeida',//obligatorio
+                color:'red'
+            },
+            {
+                fecha_inicia: moment('2014-03-25 12:00'), //obligatorio
+                fecha_fin: moment('2014-03-25 13:00'), //obligatorio
+                cuartonro: 3,//obligatorio
+                nombre_persona: 'Sr. Vargas',//obligatorio
+                color:'blue'
+            }
+            
+        ],
+        haceClick: function(datos){
+            alert('Nombre: '+ datos.nombre_persona+"\n"+'Cuarto: '+ datos.cuartonro);
+            //console.log('Nombre: '+ datos.nombre_persona);
+            //console.log('Cuarto: '+ datos.cuartonro);
+        }
+    });
+    </script>
 </body>
 
 </html>
