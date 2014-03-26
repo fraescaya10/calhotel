@@ -17,6 +17,9 @@
 .tbl-botones, .tbl-botones h1{
     font-size: 1.5em;
 }
+.tbl-botones{
+    border: none;
+}
 
 .tbl-cuerpo{
     height: 30em;
@@ -27,7 +30,7 @@
 }
 
 .filatbl{
-    height: 10em;
+    height: 6em;
 }
 .celda, .celcab {
     text-align: center;
@@ -48,8 +51,9 @@
     opacity: 0.75;
     z-index: 30;
 }
-.evento p, .evento h1{
+.evento p, .evento h5{
     font-size: 1em;
+    color:  #ccc;
 }
 /*elemento {*/
 /*    position: absolute;*/

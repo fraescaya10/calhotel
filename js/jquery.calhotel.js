@@ -12,7 +12,6 @@
             {
                 fecha_inicia: moment('2014-03-30'),
                 fecha_fin: moment('2014-03-30'),
-                numero_cuartos: 1,
                 cuartonro: 1,
                 nrocamas: 1,
                 valor: 1,
@@ -22,14 +21,14 @@
             {
                 fecha_inicia: moment('2014-03-25'),
                 fecha_fin: moment('2014-03-25'),
-                numero_cuartos: 1,
                 cuartonro: 3,
                 nrocamas: 1,
                 valor: 1,
                 nombre_persona: 'Sr. Perez',
                 color: 'red'
             }
-        ]
+        ],
+        haceClick: function(datos){}
         
     };
     
@@ -37,7 +36,7 @@
     $.fn.calhotel = function (config_usuario) {
         config_default = $.extend(config_default, config_usuario);
         this.each(function () {
-            var agenda, tbl, cont;
+            var agenda, cont;
             cont = $(this);
             agenda = new vistaAgenda(config_default);
             contenedor_principal = $("<div class='contenedor-principal'></div>"); //contiene a las tablas de botones y al div secundario
@@ -67,7 +66,6 @@
             });
             
             $('#btnhoy').click(function(e){
-                
                 c=0;
                 $('#titFecha').text(devuelveSemana(c));
                 actualizaCabeceras(primerdia(c));
@@ -194,11 +192,12 @@
         for(d in daticos){
             var celda = $('.tbl-cuerpo').find('#ct'+daticos[d].cuartonro+''+moment(daticos[d].fecha_inicia).weekday());
             if (moment(daticos[d].fecha_inicia)>=fechaInic && moment(daticos[d].fecha_inicia)<=fechaFin) {
-                var diactual = moment(daticos[d].fecha_inicia);
-                var diafinocup = moment(daticos[d].fecha_fin);
-                
-                //remuevediv(celda);//remueve posibles divs anteriores si se desactiva pueden haber varios campos en una celda
-                celda.append(creadiv(daticos, d));//agrega los nuevos divs
+                //var diactual = moment(daticos[d].fecha_inicia);
+                //var diafinocup = moment(daticos[d].fecha_fin);
+                //while (diactual <= diafinocup) {
+                //    var celda = $('.tbl-cuerpo').find('#ct'+daticos[d].cuartonro+''+moment(daticos[d].fecha_inicia).weekday());
+                //}
+                celda.append(creadiv(daticos[d]));//agrega los nuevos divs
                 
             }else{
                 remuevediv(celda);
@@ -206,21 +205,23 @@
         }
     }
     
-    function creadiv(datos, i) {
+    function creadiv(datos) {
         var div = $("<div class='evento'><h5></h5><p></p></div>");
         div.css({
             border: '1px solid gray',
             borderRadius: '5px',
             boxShadow: '1px 1px 1px 1px rgba(0,0,0,0.3)',
-            backgroundColor: datos[i].color===undefined ? 'cyan':datos[i].color,
+            backgroundColor: datos.color===undefined ? 'cyan':datos.color,
             width: '10em',
             cursor:'pointer'
-        }).click(function(ev){
-            clickdiv(datos, i);
+        })
+        .click(function(ev){
+            config_default.haceClick.call(this,datos); //el this no se recibe como parametro pero se debe enviar, datos si es parametro q se recibe
         });
-        //.addClass('draggable')
-        div.find('h5').html('HH:mm');
-        div.find('p').html(datos[i].nombre_persona);
+        
+        div.find('h5').html(moment(datos.fecha_inicia).hour()+':'+moment(datos.fecha_inicia).minute()+
+                        ' - '+moment(datos.fecha_fin).hour()+':'+moment(datos.fecha_fin).minute());
+        div.find('p').html(datos.nombre_persona);
         return div;
     }
     
@@ -228,8 +229,5 @@
         celda.find('div').remove();
     }
     
-    function clickdiv(datos, i){
-        //console.log(datos[i].nombre_persona);
-        alert(datos[i].nombre_persona);
-    }
+    
 })(jQuery);
