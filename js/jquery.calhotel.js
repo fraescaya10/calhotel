@@ -47,7 +47,8 @@
             poneSemana(0);
             contenedor_principal.append(contenedor_secundario);
             cont.append(contenedor_principal);
-            desactivaboton($('#btnhoy'));
+            desactivabotonHoy($('#btnhoy'));
+            $('#btnSemana').attr('disabled',true);
             agenda.ponerCuartosOcupados();
             
             $('#btnsig').click(function(e){     
@@ -58,10 +59,12 @@
                     agenda.ponerCuartosOcupados();
                 }else if(vistadef==='dia'){
                     x++;
-                    $('#titFecha').text(devuelveDia(x).format('MMMM D, YYYY'));
+                    var diamost = devuelveDia(x);
+                    $('#titFecha').text(diamost.format('MMMM D, YYYY'));
                     actualizaCabeceraDia(x);
+                    dia.ponerCuartosOcupadosDia(diamost);
                 }      
-                desactivaboton($('#btnhoy'));
+                desactivabotonHoy($('#btnhoy'));
             });
             
             $('#btnant').click(function(e){       
@@ -72,10 +75,12 @@
                     agenda.ponerCuartosOcupados();
                 }else if(vistadef==='dia'){
                     x--;
-                    $('#titFecha').text(devuelveDia(x).format('MMMM D, YYYY'));
+                    var diamost = devuelveDia(x);
+                    $('#titFecha').text(diamost.format('MMMM D, YYYY'));
                     actualizaCabeceraDia(x);
+                    dia.ponerCuartosOcupadosDia(diamost);
                 } 
-                desactivaboton($('#btnhoy'));
+                desactivabotonHoy($('#btnhoy'));
             });
             
             $('#btnhoy').click(function(e){
@@ -86,10 +91,12 @@
                     agenda.ponerCuartosOcupados();
                 }else if(vistadef==='dia'){
                     x=0;
-                    $('#titFecha').text(devuelveDia(x).format('MMMM D, YYYY'));
+                    var diamost = devuelveDia(x);
+                    $('#titFecha').text(diamost.format('MMMM D, YYYY'));
                     actualizaCabeceraDia(x);
+                    dia.ponerCuartosOcupadosDia(diamost);
                 } 
-                desactivaboton($('#btnhoy'));
+                desactivabotonHoy($('#btnhoy'));
             });
             
             $('#btnSemana').click(function(e){
@@ -98,15 +105,22 @@
                 poneSemana(1);
                 agenda.ponerCuartosOcupados();
                 vistadef='semana';
+                $('#btnSemana').attr('disabled',true);
+                $('#btnDia').attr('disabled',false);
             });
             
             $('#btnDia').click(function(e){
                 x=0;//Desactivar si no se quiere q coja el dia actual
                 //console.log('Si llega a dia');
-                $('#titFecha').text(devuelveDia(x).format('MMMM D, YYYY'));
+                var diamost = devuelveDia(x);
+                $('#titFecha').text(diamost.format('MMMM D, YYYY'));
                 poneDia();
                 vistadef='dia';
                 actualizaCabeceraDia(x);
+                dia.ponerCuartosOcupadosDia(diamost);
+                desactivabotonHoy($('#btnhoy'));
+                $('#btnSemana').attr('disabled',false);
+                $('#btnDia').attr('disabled',true);
             });
             
             function poneSemana(opc){ //opc:1 si es llamada desde el btnSemana
@@ -125,14 +139,16 @@
         });
     };
     
-    function desactivaboton(btn) {
+    function desactivabotonHoy(btn) {
         var hoy = moment();
-        if (hoy>=fechaInic && hoy <=fechaFin) {
+        if (mismaFecha(hoy,fechaInic)||mismaFecha(hoy,fechaFin)//si la fecha actual es igual a fecha inicio o fechafin
+            ||((moment(hoy).isAfter(fechaInic))&&(moment(hoy).isBefore(fechaFin)))) {//si la fecha actual esta entre fechainic y fechafin
             $(btn).attr("disabled", true);
         }else{
             $(btn).attr("disabled", false);
         }
     }
+    
     function creaBotonesSup() {
         var html = "<div class='botones-cabecera'><table class='tbl-botones'>" +
                 "<tr>" +
@@ -179,6 +195,16 @@
         return moment(fecha).startOf('week');
     }
     
+    function mismaFecha(f1,f2){
+        var esIgual = false;
+        if(moment(f1).isSame(f2,'year')&&//Cuando el diainicial es igual al dia mostrado
+            moment(f1).isSame(f2,'month')&&
+            moment(f1).isSame(f2,'day')){
+                esIgual = true;
+        }
+        return esIgual;
+    }
+    
     //pd= primer dia
     function actualizaCabecerasSemana(pd) {
         for(var i = 0; i<config_default.dias_sem.length;i++){
@@ -197,6 +223,7 @@
         this.ponerCuartosOcupados = ponerCuartosOcupados;
         
         function creaContenido() {
+            
             var pd = primerdia(c).date();
             var html = creaTabla(pd);            
             return html;
@@ -254,6 +281,7 @@
                     var diactual = moment(daticos[d].fecha_inicia);
                     var diafinocup = moment(daticos[d].fecha_fin);
                     while (diactual <= diafinocup) {
+                        remuevediv(celda);
                         celda.append(creadiv(daticos[d]));
                         diactual = moment(diactual).add('day',1);
                         celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+diactual.weekday());
@@ -304,8 +332,10 @@
     function vistaDia (datos){
         
         this.creaTabla= creaTabla;
+        this.ponerCuartosOcupadosDia = ponerCuartosOcupadosDia;
         
         function creaTabla() {
+            
             var tabla = "<div class='contenedor-tabla'>" +
             " <div class='cont_tblcabecera'>" +
             creaCabeceraTbl() +
@@ -341,10 +371,23 @@
             return tbody;
         }
         
-        function ponerCuartosOcupadosDia(){
-                
+        function ponerCuartosOcupadosDia(diamostrado){//objeto moment del dia mostrado
+            //console.log(diamostrado.format('MMMM D'));
+            var daticos = datos.datosroom;
+            for (d in daticos) {
+                 var celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro);
+                if(mismaFecha(daticos[d].fecha_inicia,diamostrado)){
+                    remuevediv(celda);
+                    celda.append(creadiv(daticos[d]));
+                }else if(moment(diamostrado).isBefore(daticos[d].fecha_fin)//Si diamostrado es antes de fechafin y diamostrado es mayor a fecha inicial
+                        &&moment(diamostrado).isAfter(daticos[d].fecha_inicia)){
+                    remuevediv(celda);
+                    celda.append(creadiv(daticos[d]));
+                }else{
+                    remuevediv(celda);
+                }
+            }
+            
         }
     }    
-    
-    
 })(jQuery);
