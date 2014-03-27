@@ -1,7 +1,7 @@
 //Plugin creacion calendario hotel
 (function ($, undefined) {
     moment.lang('es');
-    c=0;
+    c=0, x=0;
     fechaInic=null;
     fechaFin=null;
     //Configuraciones por defecto
@@ -36,42 +36,92 @@
     $.fn.calhotel = function (config_usuario) {
         config_default = $.extend(config_default, config_usuario);
         this.each(function () {
-            var agenda, cont;
+            var agenda, cont, vistadef='semana';
             cont = $(this);
             agenda = new vistaAgenda(config_default);
+            dia = new vistaDia(config_default);
             contenedor_principal = $("<div class='contenedor-principal'></div>"); //contiene a las tablas de botones y al div secundario
             contenedor_secundario = $("<div class='contenedor-secundario'></div>");
-            
-            contenido = agenda.creaContenido();//devuelve la tabla
-            contenedor_secundario.append(contenido);
+            tblBotones = creaBotonesSup();
+            contenedor_secundario.append(tblBotones);
+            poneSemana(0);
             contenedor_principal.append(contenedor_secundario);
-            
             cont.append(contenedor_principal);
-            ponerCuartosOcupados();
             desactivaboton($('#btnhoy'));
-            $('#btnsig').click(function(e){                
-                c++;
-                $('#titFecha').text(devuelveSemana(c));
-                actualizaCabeceras(primerdia(c));
-                ponerCuartosOcupados();
+            agenda.ponerCuartosOcupados();
+            
+            $('#btnsig').click(function(e){     
+                if(vistadef==='semana'){
+                    c++;
+                    $('#titFecha').text(devuelveSemana(c));
+                    actualizaCabecerasSemana(primerdia(c));
+                    agenda.ponerCuartosOcupados();
+                }else if(vistadef==='dia'){
+                    x++;
+                    $('#titFecha').text(devuelveDia(x).format('MMMM D, YYYY'));
+                    actualizaCabeceraDia(x);
+                }      
                 desactivaboton($('#btnhoy'));
             });
             
-            $('#btnant').click(function(e){                
-                c--;
-                $('#titFecha').text(devuelveSemana(c));
-                actualizaCabeceras(primerdia(c));
-                ponerCuartosOcupados();
+            $('#btnant').click(function(e){       
+                if(vistadef==='semana'){         
+                    c--;
+                    $('#titFecha').text(devuelveSemana(c));
+                    actualizaCabecerasSemana(primerdia(c));
+                    agenda.ponerCuartosOcupados();
+                }else if(vistadef==='dia'){
+                    x--;
+                    $('#titFecha').text(devuelveDia(x).format('MMMM D, YYYY'));
+                    actualizaCabeceraDia(x);
+                } 
                 desactivaboton($('#btnhoy'));
             });
             
             $('#btnhoy').click(function(e){
-                c=0;
-                $('#titFecha').text(devuelveSemana(c));
-                actualizaCabeceras(primerdia(c));
-                ponerCuartosOcupados();
+                if(vistadef==='semana'){
+                    c=0;
+                    $('#titFecha').text(devuelveSemana(c));
+                    actualizaCabecerasSemana(primerdia(c));
+                    agenda.ponerCuartosOcupados();
+                }else if(vistadef==='dia'){
+                    x=0;
+                    $('#titFecha').text(devuelveDia(x).format('MMMM D, YYYY'));
+                    actualizaCabeceraDia(x);
+                } 
                 desactivaboton($('#btnhoy'));
             });
+            
+            $('#btnSemana').click(function(e){
+                c=0;//desactivar si no se quiere que coja la semana actual
+                $('#titFecha').text(devuelveSemana(c));
+                poneSemana(1);
+                agenda.ponerCuartosOcupados();
+                vistadef='semana';
+            });
+            
+            $('#btnDia').click(function(e){
+                x=0;//Desactivar si no se quiere q coja el dia actual
+                //console.log('Si llega a dia');
+                $('#titFecha').text(devuelveDia(x).format('MMMM D, YYYY'));
+                poneDia();
+                vistadef='dia';
+                actualizaCabeceraDia(x);
+            });
+            
+            function poneSemana(opc){ //opc:1 si es llamada desde el btnSemana
+                if(opc === 1){
+                   contenedor_secundario.find('.contenedor-tabla').remove();
+                }
+                tblContenidos= agenda.creaContenido();
+                contenedor_secundario.append(tblContenidos);
+            }
+            
+            function poneDia(){
+                contenedor_secundario.find('.contenedor-tabla').remove();
+                tblContenidos = dia.creaTabla();
+                contenedor_secundario.append(tblContenidos);
+            }
         });
     };
     
@@ -82,21 +132,9 @@
         }else{
             $(btn).attr("disabled", false);
         }
-        
     }
-    function vistaAgenda (datos) {
-        this.creaContenido = creaContenido;
-        
-        function creaContenido() {
-            var rangsem = devuelveSemana(c);
-            var pd = primerdia(c).date();
-            
-            var html = "<div class='botones-cabecera'>"+creaBotonesSup(rangsem)+"</div>" + creaTabla(pd);            
-            return html;
-        }
-
-        function creaBotonesSup(titFecha) {
-            var html = "<table class='tbl-botones'>" +
+    function creaBotonesSup() {
+        var html = "<div class='botones-cabecera'><table class='tbl-botones'>" +
                 "<tr>" +
                 "<td id='btns_izq'>" +
                 "<button type='button' class='btn btn-default' id='btnant'><a>&laquo;</a></button>" +
@@ -104,24 +142,72 @@
                 "<button type='button' class='btn btn-default' id='btnsig'><a>&raquo;</a></button>" +
                 "</td>" +
                 "<td id='tit_tabla'>" +
-                "<h1 id='titFecha'>" + titFecha + "</h1>" +
+                "<h1 id='titFecha'>" + devuelveSemana(c)+ "</h1>" +
                 "</td>" +
                 "<td id='btns_der'>" +
-                "<button type='button' class='btn btn-default'><a>Semana</a></button>" +
-                "<button type='button' class='btn btn-default'><a>Dia</a></button>" +
+                "<button type='button' class='btn btn-default' id='btnSemana'><a>Semana</a></button>" +
+                "<button type='button' class='btn btn-default' id='btnDia'><a>Dia</a></button>" +
                 "</td>" +
                 "</tr>" +
-                "</table>";
+                "</table></div>";
 
+            return html;
+    }
+    
+    function devuelveSemana(incdec) {
+        var fecha = moment().add('week', incdec);
+        var iniSem = moment(fecha).startOf('week');//Inicia semana
+        var finSem = moment(fecha).endOf('week');//Finaliza semana
+        fechaInic= iniSem;
+        fechaFin = finSem;
+        if (moment(iniSem).month()===moment(finSem).month()) {
+            return iniSem.format('MMMM D')+' - '+finSem.format('D');
+        }else{
+            return iniSem.format('MMMM D')+' - '+finSem.format('MMMM D');
+        }
+    }
+    
+    function devuelveDia(index){
+        var fecha = moment().add('day',index);
+        fechaInic = fecha;
+        fechaFin = fecha;
+        return fecha;
+    }
+    
+    function primerdia(incdec) {
+        fecha = moment().add('week', incdec);
+        return moment(fecha).startOf('week');
+    }
+    
+    //pd= primer dia
+    function actualizaCabecerasSemana(pd) {
+        for(var i = 0; i<config_default.dias_sem.length;i++){
+            var d= moment(pd).add('day',(i)).date();
+            $('.dia'+i).html(dias[i] +" "+d);
+        }
+    }
+    
+    function actualizaCabeceraDia(d){
+        $('.celcabdia').html(devuelveDia(x).format('dddd').toUpperCase());
+    }
+    
+    //**************************************** PARA LA VISTA DE AGENDA **********************************************
+    function vistaAgenda (datos) {
+        this.creaContenido = creaContenido;
+        this.ponerCuartosOcupados = ponerCuartosOcupados;
+        
+        function creaContenido() {
+            var pd = primerdia(c).date();
+            var html = creaTabla(pd);            
             return html;
         }
 
         function creaTabla(primerdia) {
             var tabla = "<div class='contenedor-tabla'>" +
-            " <div class='tbl-cabecera'>" +
+            " <div class='cont_tblcabecera'>" +
             creaCabeceraTbl(primerdia) +
             "</div>" +
-            " <div class='tbl-cuerpo'>" +
+            " <div class='cont_tblcuerpo'><div class='cont_event'></div>" +
             creaCuerpoTbl() +
             "</div>" +
             "</div>";
@@ -159,51 +245,33 @@
             tbody += f + "</tbody></table>";
             return tbody;
         }
-    }
-    
-    function devuelveSemana(incdec) {
-        var fecha = moment().add('week', incdec);
-        var iniSem = moment(fecha).startOf('week');//Inicia semana
-        var finSem = moment(fecha).endOf('week');//Finaliza semana
-        fechaInic= iniSem;
-        fechaFin = finSem;
-        if (moment(iniSem).month()===moment(finSem).month()) {
-            return iniSem.format('MMMM D')+' - '+finSem.format('D');
-        }else{
-            return iniSem.format('MMMM D')+' - '+finSem.format('MMMM D');
-        }
-    }
-    
-    function primerdia(incdec) {
-        fecha = moment().add('week', incdec);
-        return moment(fecha).startOf('week');
-    }
-    
-    //pd= primer dia
-    function actualizaCabeceras(pd) {
-        for(var i = 0; i<config_default.dias_sem.length;i++){
-            var d= moment(pd).add('day',(i)).date();
-            $('.dia'+i).html(dias[i] +" "+d);
-        }
-    }
-
-    function ponerCuartosOcupados() {
-        var daticos = config_default.datosroom;
-        for(d in daticos){
-            var celda = $('.tbl-cuerpo').find('#ct'+daticos[d].cuartonro+''+moment(daticos[d].fecha_inicia).weekday());
-            if (moment(daticos[d].fecha_inicia)>=fechaInic && moment(daticos[d].fecha_inicia)<=fechaFin) {
-                //var diactual = moment(daticos[d].fecha_inicia);
-                //var diafinocup = moment(daticos[d].fecha_fin);
-                //while (diactual <= diafinocup) {
-                //    var celda = $('.tbl-cuerpo').find('#ct'+daticos[d].cuartonro+''+moment(daticos[d].fecha_inicia).weekday());
-                //}
-                celda.append(creadiv(daticos[d]));//agrega los nuevos divs
-                
-            }else{
-                remuevediv(celda);
+        
+        function ponerCuartosOcupados() {
+            var daticos = datos.datosroom;
+            for(d in daticos){
+                var celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+moment(daticos[d].fecha_inicia).weekday());
+                if (moment(daticos[d].fecha_inicia)>=fechaInic && moment(daticos[d].fecha_inicia)<=fechaFin) {
+                    var diactual = moment(daticos[d].fecha_inicia);
+                    var diafinocup = moment(daticos[d].fecha_fin);
+                    while (diactual <= diafinocup) {
+                        celda.append(creadiv(daticos[d]));
+                        diactual = moment(diactual).add('day',1);
+                        celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+diactual.weekday());
+                    }                
+                }else{
+                    var diactual = moment(daticos[d].fecha_inicia);
+                    var diafinocup = moment(daticos[d].fecha_fin);
+                    while (diactual <= diafinocup) {
+                        remuevediv(celda);
+                        diactual = moment(diactual).add('day',1);
+                        celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+diactual.weekday());
+                    } 
+                    
+                }
             }
         }
     }
+    
     
     function creadiv(datos) {
         var div = $("<div class='evento'><h5></h5><p></p></div>");
@@ -212,8 +280,10 @@
             borderRadius: '5px',
             boxShadow: '1px 1px 1px 1px rgba(0,0,0,0.3)',
             backgroundColor: datos.color===undefined ? 'red':datos.color, //color rojo para ocupado
-            width: '10em',
+            width: '95%',
             cursor:'pointer'
+            //left: left,
+            //top: top
         })
         .click(function(ev){
             config_default.haceClick.call(this,datos); //el this no se recibe como parametro pero se debe enviar, datos si es parametro q se recibe
@@ -228,6 +298,53 @@
     function remuevediv(celda){
         celda.find('div').remove();
     }
+    
+    
+    //**************************************** PARA LA VISTA DE DIA **********************************************
+    function vistaDia (datos){
+        
+        this.creaTabla= creaTabla;
+        
+        function creaTabla() {
+            var tabla = "<div class='contenedor-tabla'>" +
+            " <div class='cont_tblcabecera'>" +
+            creaCabeceraTbl() +
+            "</div>" +
+            " <div class='cont_tblcuerpo'><div class='cont_event'></div>" +
+            creaCuerpoTbl() +
+            "</div>" +
+            "</div>";
+            return tabla;
+        }
+
+        function creaCabeceraTbl() {
+            var thead;
+            thead = "<table><thead>" +
+            "<tr class='filasupdia'>" +
+            "<th class='celcab celroom'>Rooms</th>" +
+            "<th class='celcabdia'></th>" +
+            "<th class='calcabvac'></th>" +
+            "</tr></thead></table>";
+            return thead;
+        }
+
+        function creaCuerpoTbl() {
+            var tbody = "<table><tbody>";
+            var f = '';
+            for(var i=0 ; i <datos.num_fila;i++){
+                f+="<tr class='filatbldia'> " +
+                "<td class='celcab celroom'>Room "+(i+1)+"</td>" +
+                "<td class='celdadia' id='ct"+(i+1)+"'></td>" +
+                "</tr>";
+            }
+            tbody += f + "</tbody></table>";
+            return tbody;
+        }
+        
+        function ponerCuartosOcupadosDia(){
+                
+        }
+    }    
     
     
 })(jQuery);
