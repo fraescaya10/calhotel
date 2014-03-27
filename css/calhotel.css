@@ -1,0 +1,68 @@
+*{
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    font-size: 1em;
+}
+
+.contenedor-principal,.contenedor-secundario{
+    margin: 2em;
+}
+
+.tbl-botones, .contenedor-tabla,.tbldiasAgenda{
+    width: 100%;
+    border: 1px solid #9FD2E5; /*Cambiar luego*/
+}
+
+.tbl-botones, .tbl-botones h1{
+    font-size: 1.5em;
+}
+.tbl-botones{
+    border: none;
+}
+#btns_izq{
+    text-align: left;
+}
+#btns_der{
+    text-align: right;
+}
+
+.cont_tblcuerpo{
+    height: 30em;
+    overflow: auto;  
+}
+.cont_tblcabecera{
+    overflow: hidden;
+}
+
+.filatbl, .filatbldia{
+    height: 6em;
+}
+.celda, .celcab {
+    text-align: center;
+    width: 13.5%;
+}
+.celda , .filatbl .celroom, .filasup,.filatbldia .celroom, .filasupdia , .celdadia{
+    border: 1px solid #9FD2E5;
+}
+
+.celroom{
+    width: 6em;
+}
+.calcabvac{
+    width: 2em;
+}
+
+.celcabdia, .celdadia{
+    width:94.5%;
+    text-align: center;
+}
+.evento{
+    margin: auto;
+    opacity: 0.75;
+    z-index: 30;
+}
+.evento p, .evento h5{
+    font-size: 1em;
+    color:  #ccc;
+}
