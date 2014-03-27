@@ -8,26 +8,7 @@
     config_default = {
         num_fila: 5,
         dias_sem: ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab','Dom'],
-        datosroom: [
-            {
-                fecha_inicia: moment('2014-03-30'),
-                fecha_fin: moment('2014-03-30'),
-                cuartonro: 1,
-                nrocamas: 1,
-                valor: 1,
-                nombre_persona: 'Sr. Lopez',
-                color: 'blue'
-            },
-            {
-                fecha_inicia: moment('2014-03-25'),
-                fecha_fin: moment('2014-03-25'),
-                cuartonro: 3,
-                nrocamas: 1,
-                valor: 1,
-                nombre_persona: 'Sr. Perez',
-                color: 'red'
-            }
-        ],
+        datosroom: [],
         haceClick: function(datos){}
 
     };
@@ -36,9 +17,9 @@
     $.fn.calhotel = function (config_usuario) {
         config_default = $.extend(config_default, config_usuario);
         this.each(function () {
-            var agenda, cont, vistadef='semana';
+            var semana, cont, vistadef='semana';
             cont = $(this);
-            agenda = new vistaAgenda(config_default);
+            semana = new vistaSemana(config_default);
             dia = new vistaDia(config_default);
             contenedor_principal = $("<div class='contenedor-principal'></div>"); //contiene a las tablas de botones y al div secundario
             contenedor_secundario = $("<div class='contenedor-secundario'></div>");
@@ -49,14 +30,14 @@
             cont.append(contenedor_principal);
             desactivabotonHoy($('#btnhoy'));
             $('#btnSemana').attr('disabled',true);
-            agenda.ponerCuartosOcupados();
+            semana.ponerCuartosOcupados();
 
             $('#btnsig').click(function(e){
                 if(vistadef==='semana'){
                     c++;
                     $('#titFecha').text(devuelveSemana(c));
                     actualizaCabecerasSemana(primerdia(c));
-                    agenda.ponerCuartosOcupados();
+                    semana.ponerCuartosOcupados();
                 }else if(vistadef==='dia'){
                     x++;
                     var diamost = devuelveDia(x);
@@ -72,7 +53,7 @@
                     c--;
                     $('#titFecha').text(devuelveSemana(c));
                     actualizaCabecerasSemana(primerdia(c));
-                    agenda.ponerCuartosOcupados();
+                    semana.ponerCuartosOcupados();
                 }else if(vistadef==='dia'){
                     x--;
                     var diamost = devuelveDia(x);
@@ -88,7 +69,7 @@
                     c=0;
                     $('#titFecha').text(devuelveSemana(c));
                     actualizaCabecerasSemana(primerdia(c));
-                    agenda.ponerCuartosOcupados();
+                    semana.ponerCuartosOcupados();
                 }else if(vistadef==='dia'){
                     x=0;
                     var diamost = devuelveDia(x);
@@ -103,7 +84,7 @@
                 c=0;//desactivar si no se quiere que coja la semana actual
                 $('#titFecha').text(devuelveSemana(c));
                 poneSemana(1);
-                agenda.ponerCuartosOcupados();
+                semana.ponerCuartosOcupados();
                 vistadef='semana';
                 $('#btnSemana').attr('disabled',true);
                 $('#btnDia').attr('disabled',false);
@@ -127,7 +108,7 @@
                 if(opc === 1){
                    contenedor_secundario.find('.contenedor-tabla').remove();
                 }
-                tblContenidos= agenda.creaContenido();
+                tblContenidos= semana.creaContenido();
                 contenedor_secundario.append(tblContenidos);
             }
 
@@ -217,8 +198,8 @@
         $('.celcabdia').html(devuelveDia(x).format('dddd').toUpperCase());
     }
 
-    //**************************************** PARA LA VISTA DE AGENDA **********************************************
-    function vistaAgenda (datos) {
+    //**************************************** PARA LA VISTA DE SEMANA**********************************************
+    function vistaSemana (datos) {
         this.creaContenido = creaContenido;
         this.ponerCuartosOcupados = ponerCuartosOcupados;
 
@@ -287,24 +268,45 @@
             var daticos = datos.datosroom;
             for(d in daticos){
                 var celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+moment(daticos[d].fecha_inicia).weekday());
-                if (moment(daticos[d].fecha_inicia)>=fechaInic && moment(daticos[d].fecha_inicia)<=fechaFin) {
-                    var diactual = moment(daticos[d].fecha_inicia);
-                    var diafinocup = moment(daticos[d].fecha_fin);
-                    while (diactual <= diafinocup) {
-                        remuevediv(celda);
+                //if (moment(daticos[d].fecha_inicia)>=fechaInic && moment(daticos[d].fecha_inicia)<=fechaFin) {
+                    //var diactual = moment(daticos[d].fecha_inicia);
+                    //var diafinocup = moment(daticos[d].fecha_fin);
+                    //while (diactual <= diafinocup) {
+                        //remuevediv(celda);
+                        //celda.append(creadiv(daticos[d]));
+                        //diactual = moment(diactual).add('day',1);
+                        //celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+diactual.weekday());
+                    //}
+                //}
+                var diactual = moment(daticos[d].fecha_inicia).clone();//dia actual ocupacion
+                var diafinocup = moment(daticos[d].fecha_fin).clone();//dia de fin de ocupacion
+                if (moment(diactual).isAfter(fechaInic) //Si esta despues de fechaInic -> inicio de semana mostrada y
+                    && moment(diactual).isBefore( fechaFin)) {// si esta antes de fechaFin -> fin de la semana mostrada
+                    while (diactual <= diafinocup && diactual < fechaFin) {
+                        remuevediv(celda);//se remueve cualquier dato en caso de q estuviera ocupada
                         celda.append(creadiv(daticos[d]));
                         diactual = moment(diactual).add('day',1);
                         celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+diactual.weekday());
                     }
-                }else{
-                    var diactual = moment(daticos[d].fecha_inicia);
-                    var diafinocup = moment(daticos[d].fecha_fin);
+                }
+                //else if(moment(diafinocup).isAfter(fechaInic)&&moment(diactual).isBefore(fechaInic)){
+                    //diactual = fechaInic.clone();
+                    //while(diactual <= diafinocup){
+                        //remuevediv(celda);
+                        //celda.append(creadiv(daticos[d]));
+                        //diactual = moment(diactual).add('day',1);
+                        //celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+diactual.weekday());
+                    //}
+                    //
+                //}
+                else{
                     while (diactual <= diafinocup) {
+                        
                         remuevediv(celda);
                         diactual = moment(diactual).add('day',1);
                         celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+diactual.weekday());
                     }
-
+                    
                 }
             }
         }
