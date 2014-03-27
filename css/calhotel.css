@@ -20,16 +20,16 @@
 .tbl-botones{
     border: none;
 }
+
 #btns_izq{
     text-align: left;
 }
 #btns_der{
     text-align: right;
 }
-
 .cont_tblcuerpo{
     height: 30em;
-    overflow: auto;  
+    overflow: auto;
 }
 .cont_tblcabecera{
     overflow: hidden;
@@ -37,6 +37,9 @@
 
 .filatbl, .filatbldia{
     height: 6em;
+}
+.celhoy{
+    background-color: #D0DDE1;
 }
 .celda, .celcab {
     text-align: center;
@@ -53,10 +56,12 @@
     width: 2em;
 }
 
+
 .celcabdia, .celdadia{
     width:94.5%;
     text-align: center;
 }
+
 .evento{
     margin: auto;
     opacity: 0.75;
