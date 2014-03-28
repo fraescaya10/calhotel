@@ -10,8 +10,13 @@
         dias_sem: ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab','Dom'],
         datosroom: [],
         haceClick: function(datos){},
-        clickCelda: function(id){
-           alert('Hola desde la celda: '+id);
+        clickCelda: function(id,ev){
+            //el $(this) es la celda
+            if ($(this).find('.evento').length) {
+                ev.preventDefault();
+            }else{
+                alert('Hola desde la celda: '+id);
+            }
         }
     };
 
@@ -33,7 +38,8 @@
             desactivabotonHoy($('#btnhoy'));
             $('#btnSemana').attr('disabled',true);
             semana.ponerCuartosOcupados();
-
+            ponEventos();
+            
             $('#btnsig').click(function(e){
                 if(vistadef==='semana'){
                     c++;
@@ -119,6 +125,28 @@
                 tblContenidos = dia.creaTabla();
                 contenedor_secundario.append(tblContenidos);
             }
+            
+            function ponEventos() {
+                //Eventos para las celdas
+                $('.cont_tblcuerpo').on( "click", ".celda", function(ev) {
+                    config_default.clickCelda.call(this,this.id,ev);
+                });
+                
+                $('.cont_tblcuerpo').on( "mousedown", ".celda", function(ev) {
+                    if ($(this).find('.evento').length) {
+                        ev.preventDefault();
+                    }else{
+                        this.bgColor = '#EFBDBD';
+                    }
+                });
+                $('.cont_tblcuerpo').on( "mouseup", ".celda", function(ev) {
+                    if ($(this).find('.evento').length) {
+                        ev.preventDefault();
+                    }else{
+                        this.bgColor = '';
+                    }
+                });
+            }
         });
     };
 
@@ -202,7 +230,6 @@
 
     //**************************************** PARA LA VISTA DE SEMANA**********************************************
     function vistaSemana (datos) {
-        
         this.creaContenido = creaContenido;
         this.ponerCuartosOcupados = ponerCuartosOcupados;
 
@@ -235,7 +262,7 @@
             //Dias de la semana
             for (var i = 0; i < dias.length; i++) {
                 var h = $("<th class='celcab'></th>");
-                h.addClass('dia'+i).html(dias[i] +" "+(primerdia+i))
+                h.addClass('dia'+i).html(dias[i] +" "+(primerdia+i));
                 tr.append(h);
             }
             //Celda vacia final
@@ -261,15 +288,6 @@
                         tdc.addClass('celhoy');
                     }
                     tdc.attr('id', 'ct'+(i+1)+c);
-                    tdc.click(function(e){
-                        config_default.clickCelda.call(this,this.id);
-                    });
-                    tdc.mousedown(function(){
-                        this.bgColor = '#EFBDBD';
-                    });
-                    tdc.mouseup(function(){
-                        this.bgColor = '';
-                    });
                     tr.append(tdc);
                 }
                 tbody.append(tr);
@@ -291,7 +309,7 @@
         function ponerCuartosOcupados() {
             var daticos = datos.datosroom;
             limpiarCuartos();
-            for(d in daticos){
+            for(var d=0; d<daticos.length; d++){
                 var celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+moment(daticos[d].fecha_inicia).weekday());
                 var diactual = moment(daticos[d].fecha_inicia).clone();//dia actual ocupacion
                 var diafinocup = moment(daticos[d].fecha_fin).clone();//dia de fin de ocupacion
@@ -319,7 +337,16 @@
     }
 
     function creadiv(datos) {
-        var div = $("<div class='evento'><h5></h5><p></p></div>");
+        var div = $("<div class='evento'></div>");
+        var h5 = $('<h5></h5>');
+        var p = $('<p></p>');
+        
+        h5.html(moment(datos.fecha_inicia).hour()+':'+moment(datos.fecha_inicia).minute()+
+                        ' - '+moment(datos.fecha_fin).hour()+':'+moment(datos.fecha_fin).minute());
+        p.html(datos.nombre_persona);        
+        
+        div.append(h5);
+        div.append(p);
         div.css({
             border: '1px solid gray',
             borderRadius: '5px',
@@ -329,14 +356,9 @@
             cursor:'pointer'
             //left: left,
             //top: top
-        })
-        .click(function(ev){
-            config_default.haceClick.call(this,datos); //el this no se recibe como parametro pero se debe enviar, datos si es parametro q se recibe
+        }).click(function(ev){
+            config_default.haceClick.call(this,datos);
         });
-
-        div.find('h5').html(moment(datos.fecha_inicia).hour()+':'+moment(datos.fecha_inicia).minute()+
-                        ' - '+moment(datos.fecha_fin).hour()+':'+moment(datos.fecha_fin).minute());
-        div.find('p').html(datos.nombre_persona);
         return div;
     }
     
@@ -406,12 +428,12 @@
         function ponerCuartosOcupadosDia(diamostrado){//objeto moment del dia mostrado
             var daticos = datos.datosroom;
             limpiarCuartos();
-            for (d in daticos) {
+            for (var d=0; d<daticos.length; d++) {
                  var celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro);
                 if(mismaFecha(daticos[d].fecha_inicia,diamostrado)||mismaFecha(daticos[d].fecha_fin,diamostrado)){
                     celda.append(creadiv(daticos[d]));
                 }else if(moment(diamostrado).isBefore(daticos[d].fecha_fin)//Si diamostrado es antes de fechafin y diamostrado es mayor a fecha inicial
-                        &&moment(diamostrado).isAfter(daticos[d].fecha_inicia)){
+                    &&moment(diamostrado).isAfter(daticos[d].fecha_inicia)){
                     celda.append(creadiv(daticos[d]));
                 }
             }
