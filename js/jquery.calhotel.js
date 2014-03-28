@@ -9,8 +9,10 @@
         num_fila: 5,
         dias_sem: ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab','Dom'],
         datosroom: [],
-        haceClick: function(datos){}
-
+        haceClick: function(datos){},
+        clickCelda: function(id){
+           alert('Hola desde la celda: '+id);
+        }
     };
 
     //con esto se llama desde javascript
@@ -190,7 +192,7 @@
     function actualizaCabecerasSemana(pd) {
         for(var i = 0; i<config_default.dias_sem.length;i++){
             var d= moment(pd).add('day',(i)).date();
-            $('.dia'+i).html(dias[i] +" "+d);
+            $('.dia'+i).html(config_default.dias_sem[i] +" "+d);
         }
     }
 
@@ -200,66 +202,87 @@
 
     //**************************************** PARA LA VISTA DE SEMANA**********************************************
     function vistaSemana (datos) {
+        
         this.creaContenido = creaContenido;
         this.ponerCuartosOcupados = ponerCuartosOcupados;
 
         function creaContenido() {
-
             var pd = primerdia(c).date();
-            var html = creaTabla(pd);
-            return html;
-        }
-
-        function creaTabla(primerdia) {
-            var tabla = "<div class='contenedor-tabla'>" +
-            " <div class='cont_tblcabecera'>" +
-            creaCabeceraTbl(primerdia) +
-            "</div>" +
-            " <div class='cont_tblcuerpo'><div class='cont_event'></div>" +
-            creaCuerpoTbl() +
-            "</div>" +
-            "</div>";
+            var tabla = creaTabla(pd);
             return tabla;
         }
 
+        function creaTabla(primerdia) {            
+            var divtbl = $("<div class='contenedor-tabla'></div>");
+            var cabecera = $("<div class='cont_tblcabecera'></div>");
+            var cuerpo = $("<div class='cont_tblcuerpo'></div>");
+            cabecera.append(creaCabeceraTbl(primerdia));
+            cuerpo.append(creaCuerpoTbl());
+            divtbl.append(cabecera);
+            divtbl.append(cuerpo);
+            return divtbl;
+        }
+
         function creaCabeceraTbl(primerdia) {
-            var thead, fil;
-            thead = "<table><thead><tr class='filasup'>";
-            fil = "<th class='celcab celroom'>Rooms</th>";
-            dias = datos.dias_sem;
+            var dias = datos.dias_sem;
+            var table = $("<table></table>");
+            var thead = $("<thead></thead>");
+            var tr = $("<tr class='filasup'></tr>");
+            //Cabecera Rooms
+            var th = $("<th class='celcab celroom'></th>");
+            th.html('Room');
+            tr.append(th);
+            //Dias de la semana
             for (var i = 0; i < dias.length; i++) {
-                fil += "<th class='celcab dia"+i+"'>" + dias[i] +" "+(primerdia+i)+ "</th>";
+                var h = $("<th class='celcab'></th>");
+                h.addClass('dia'+i).html(dias[i] +" "+(primerdia+i))
+                tr.append(h);
             }
-            fil+="<th class='calcabvac'></th>";
-            thead += fil + "</tr></thead></table>";
-            return thead;
+            //Celda vacia final
+            var v = $("<th class='calcabvac'></th>");
+            tr.append(v);
+            thead.append(tr);
+            table.append(thead);
+            return table;
         }
 
         function creaCuerpoTbl() {
-            var tbody = "<table><tbody>";
-            var f = '';
-
+            var table = $("<table></table>");
+            var tbody = $("<tbody></tbody>");
             for(var i=0 ; i <datos.num_fila;i++){
-                f+="<tr class='filatbl' id='fila"+(i+1)+"'> " +
-                "<td class='celcab celroom'>Room "+(i+1)+"</td>" +
-                "<td class='celda"+eshoy(0)+"' id='ct"+(i+1)+"0'></td>" +
-                "<td class='celda"+eshoy(1)+"' id='ct"+(i+1)+"1'></td>" +
-                "<td class='celda"+eshoy(2)+"' id='ct"+(i+1)+"2'></td>" +
-                "<td class='celda"+eshoy(3)+"' id='ct"+(i+1)+"3'></td>" +
-                "<td class='celda"+eshoy(4)+"' id='ct"+(i+1)+"4'></td>" +
-                "<td class='celda"+eshoy(5)+"' id='ct"+(i+1)+"5'></td>" +
-                "<td class='celda"+eshoy(6)+"' id='ct"+(i+1)+"6'></td>" +
-                "</tr>";
+                var tr = $("<tr class='filatbl'></tr>");
+                tr.attr('id','fila'+(i+1));
+                var tdr= $("<td class='celcab celroom'></td>");
+                tdr.html('Room '+(i+1));
+                tr.append(tdr);
+                for(var c=0; c<7;c++){
+                    var tdc = $("<td class='celda'></td>");
+                    if(eshoy(c)===true){
+                        tdc.addClass('celhoy');
+                    }
+                    tdc.attr('id', 'ct'+(i+1)+c);
+                    tdc.click(function(e){
+                        config_default.clickCelda.call(this,this.id);
+                    });
+                    tdc.mousedown(function(){
+                        this.bgColor = '#EFBDBD';
+                    });
+                    tdc.mouseup(function(){
+                        this.bgColor = '';
+                    });
+                    tr.append(tdc);
+                }
+                tbody.append(tr);
             }
-            tbody += f + "</tbody></table>";
-            return tbody;
+            table.append(tbody);
+            return table;
         }
 
         function eshoy(i){
-            var es = '';
+            var es = false;
             var hoy = moment().weekday();
             if(hoy===i){
-                es = ' celhoy';
+                es = true;
             }
             return es;
         }
@@ -332,41 +355,52 @@
 
         this.creaTabla= creaTabla;
         this.ponerCuartosOcupadosDia = ponerCuartosOcupadosDia;
-
-        function creaTabla() {
-            var tabla = "<div class='contenedor-tabla'>" +
-            " <div class='cont_tblcabecera'>" +
-            creaCabeceraTbl() +
-            "</div>" +
-            " <div class='cont_tblcuerpo'><div class='cont_event'></div>" +
-            creaCuerpoTbl() +
-            "</div>" +
-            "</div>";
-            return tabla;
+        
+        function creaTabla() {            
+            var divtbl = $("<div class='contenedor-tabla'></div>");
+            var cabecera = $("<div class='cont_tblcabecera'></div>");
+            var cuerpo = $("<div class='cont_tblcuerpo'></div>");
+            cabecera.append(creaCabeceraTbl());
+            cuerpo.append(creaCuerpoTbl());
+            divtbl.append(cabecera);
+            divtbl.append(cuerpo);
+            return divtbl;
         }
 
         function creaCabeceraTbl() {
-            var thead;
-            thead = "<table><thead>" +
-            "<tr class='filasupdia'>" +
-            "<th class='celcab celroom'>Rooms</th>" +
-            "<th class='celcabdia'></th>" +
-            "<th class='calcabvac'></th>" +
-            "</tr></thead></table>";
-            return thead;
+            var table = $("<table></table>");
+            var thead = $("<thead></thead>");
+            var tr = $("<tr class='filasupdia'></tr>");
+            //Cabecera Rooms
+            var th = $("<th class='celcab celroom'></th>");
+            //Celda dia
+            var thd = $("<th class='celcabdia'></th>");
+            //Celda vacia final
+            var v = $("<th class='calcabvac'></th>");
+            th.html('Room');
+            tr.append(th);
+            tr.append(thd);
+            tr.append(v);
+            thead.append(tr);
+            table.append(thead);
+            return table;
         }
 
         function creaCuerpoTbl() {
-            var tbody = "<table><tbody>";
-            var f = '';
+            var table = $("<table></table>");
+            var tbody = $("<tbody></tbody>");
             for(var i=0 ; i <datos.num_fila;i++){
-                f+="<tr class='filatbldia'> " +
-                "<td class='celcab celroom'>Room "+(i+1)+"</td>" +
-                "<td class='celdadia' id='ct"+(i+1)+"'></td>" +
-                "</tr>";
+                var tr = $("<tr class='filatbldia'></tr>");
+                var tdr= $("<td class='celcab celroom'></td>");
+                var tdc = $("<td class='celdadia'></td>");
+                tdr.html('Room '+(i+1));
+                tdc.attr('id', 'ct'+(i+1));
+                tr.append(tdr);
+                tr.append(tdc);
+                tbody.append(tr);
             }
-            tbody += f + "</tbody></table>";
-            return tbody;
+            table.append(tbody);
+            return table;
         }
 
         function ponerCuartosOcupadosDia(diamostrado){//objeto moment del dia mostrado
