@@ -96,6 +96,7 @@
                 vistadef='semana';
                 $('#btnSemana').attr('disabled',true);
                 $('#btnDia').attr('disabled',false);
+                ponEventos();
             });
 
             $('#btnDia').click(function(e){
@@ -110,6 +111,7 @@
                 desactivabotonHoy($('#btnhoy'));
                 $('#btnSemana').attr('disabled',false);
                 $('#btnDia').attr('disabled',true);
+                ponEventos();
             });
 
             function poneSemana(opc){ //opc:1 si es llamada desde el btnSemana
@@ -127,25 +129,49 @@
             }
             
             function ponEventos() {
-                //Eventos para las celdas
-                $('.cont_tblcuerpo').on( "click", ".celda", function(ev) {
-                    config_default.clickCelda.call(this,this.id,ev);
-                });
+                console.log(vistadef);
+                if (vistadef==='semana') {
+                    //Eventos para las celdas
+                    $('.cont_tblcuerpo').on( "click", ".celda", function(ev) {
+                        config_default.clickCelda.call(this,this.id,ev);
+                    });
+                    
+                    $('.cont_tblcuerpo').on( "mousedown", ".celda", function(ev) {
+                        if ($(this).find('.evento').length) {
+                            ev.preventDefault();
+                        }else{
+                            this.bgColor = '#EFBDBD';
+                        }
+                    });
+                    $('.cont_tblcuerpo').on( "mouseup", ".celda", function(ev) {
+                        if ($(this).find('.evento').length) {
+                            ev.preventDefault();
+                        }else{
+                            this.bgColor = '';
+                        }
+                    });
+                }else{
+                    //Eventos para las celdas
+                    $('.cont_tblcuerpo').on( "click", ".celdadia", function(ev) {
+                        config_default.clickCelda.call(this,this.id,ev);
+                    });
+                    
+                    $('.cont_tblcuerpo').on( "mousedown", ".celdadia", function(ev) {
+                        if ($(this).find('.evento').length) {
+                            ev.preventDefault();
+                        }else{
+                            this.bgColor = '#EFBDBD';
+                        }
+                    });
+                    $('.cont_tblcuerpo').on( "mouseup", ".celdadia", function(ev) {
+                        if ($(this).find('.evento').length) {
+                            ev.preventDefault();
+                        }else{
+                            this.bgColor = '';
+                        }
+                    });
+                }
                 
-                $('.cont_tblcuerpo').on( "mousedown", ".celda", function(ev) {
-                    if ($(this).find('.evento').length) {
-                        ev.preventDefault();
-                    }else{
-                        this.bgColor = '#EFBDBD';
-                    }
-                });
-                $('.cont_tblcuerpo').on( "mouseup", ".celda", function(ev) {
-                    if ($(this).find('.evento').length) {
-                        ev.preventDefault();
-                    }else{
-                        this.bgColor = '';
-                    }
-                });
             }
         });
     };

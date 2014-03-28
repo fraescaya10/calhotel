@@ -23,9 +23,9 @@ long_line_behaviour=1
 long_line_column=80
 
 [files]
-current_page=1
-FILE_NAME_0=11184;Javascript;0;EUTF-8;0;1;0;%2Fhome%2Fserviestudios%2FEscritorio%2Fcalhotel%2Fjs%2Fjquery.calhotel.js;0;4
-FILE_NAME_1=1161;HTML;0;EUTF-8;0;1;0;%2Fhome%2Fserviestudios%2FEscritorio%2Fcalhotel%2Findex.html;0;4
+current_page=0
+FILE_NAME_0=18234;Javascript;0;EUTF-8;0;1;0;%2Fhome%2Fserviestudios%2FEscritorio%2Fcalhotel%2Fjs%2Fjquery.calhotel.js;0;4
+FILE_NAME_1=1176;HTML;0;EUTF-8;0;1;0;%2Fhome%2Fserviestudios%2FEscritorio%2Fcalhotel%2Findex.html;0;4
 
 [VTE]
 last_dir=/home/serviestudios/Escritorio/calhotel
