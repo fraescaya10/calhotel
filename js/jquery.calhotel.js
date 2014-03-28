@@ -263,50 +263,33 @@
             }
             return es;
         }
-
+        
+        
         function ponerCuartosOcupados() {
             var daticos = datos.datosroom;
+            limpiarCuartos();
             for(d in daticos){
                 var celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+moment(daticos[d].fecha_inicia).weekday());
-                //if (moment(daticos[d].fecha_inicia)>=fechaInic && moment(daticos[d].fecha_inicia)<=fechaFin) {
-                    //var diactual = moment(daticos[d].fecha_inicia);
-                    //var diafinocup = moment(daticos[d].fecha_fin);
-                    //while (diactual <= diafinocup) {
-                        //remuevediv(celda);
-                        //celda.append(creadiv(daticos[d]));
-                        //diactual = moment(diactual).add('day',1);
-                        //celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+diactual.weekday());
-                    //}
-                //}
                 var diactual = moment(daticos[d].fecha_inicia).clone();//dia actual ocupacion
                 var diafinocup = moment(daticos[d].fecha_fin).clone();//dia de fin de ocupacion
-                if (moment(diactual).isAfter(fechaInic) //Si esta despues de fechaInic -> inicio de semana mostrada y
-                    && moment(diactual).isBefore( fechaFin)) {// si esta antes de fechaFin -> fin de la semana mostrada
+                if ((moment(diactual).isAfter(fechaInic) //Si esta despues de fechaInic -> inicio de semana mostrada y
+                    && moment(diactual).isBefore( fechaFin))||mismaFecha(diactual,fechaInic)||mismaFecha(diactual, fechaFin)) {// si esta antes de fechaFin -> fin de la semana mostrada
                     while (diactual <= diafinocup && diactual < fechaFin) {
-                        remuevediv(celda);//se remueve cualquier dato en caso de q estuviera ocupada
+                        remuevediv(celda);//Nos aseguramos q el div no este ocupado
                         celda.append(creadiv(daticos[d]));
                         diactual = moment(diactual).add('day',1);
                         celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+diactual.weekday());
                     }
-                }
-                //else if(moment(diafinocup).isAfter(fechaInic)&&moment(diactual).isBefore(fechaInic)){
-                    //diactual = fechaInic.clone();
-                    //while(diactual <= diafinocup){
-                        //remuevediv(celda);
-                        //celda.append(creadiv(daticos[d]));
-                        //diactual = moment(diactual).add('day',1);
-                        //celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+diactual.weekday());
-                    //}
-                    //
-                //}
-                else{
-                    while (diactual <= diafinocup) {
-                        
-                        remuevediv(celda);
+                }else if((moment(diafinocup).isAfter(fechaInic) && moment(diactual).isBefore(fechaInic))){
+                    //&& moment(diafinocup).isBefore( fechaFin))){
+                    diactual = fechaInic.clone();
+                    celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+diactual.weekday());//como actualizamos diactual entonces debemos obtener la nueva celda
+                    while(diactual <= diafinocup){
+                        remuevediv(celda);//Nos aseguramos q el div no este ocupado
+                        celda.append(creadiv(daticos[d]));
                         diactual = moment(diactual).add('day',1);
                         celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+diactual.weekday());
                     }
-                    
                 }
             }
         }
@@ -333,10 +316,15 @@
         div.find('p').html(datos.nombre_persona);
         return div;
     }
-
+    
     function remuevediv(celda){
         celda.find('div').remove();
     }
+
+    function limpiarCuartos(){
+        $('.cont_tblcuerpo').find('.evento').remove();
+    }
+
 
 
     //**************************************** PARA LA VISTA DE DIA **********************************************
@@ -382,22 +370,17 @@
         }
 
         function ponerCuartosOcupadosDia(diamostrado){//objeto moment del dia mostrado
-            //console.log(diamostrado.format('MMMM D'));
             var daticos = datos.datosroom;
+            limpiarCuartos();
             for (d in daticos) {
                  var celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro);
                 if(mismaFecha(daticos[d].fecha_inicia,diamostrado)||mismaFecha(daticos[d].fecha_fin,diamostrado)){
-                    remuevediv(celda);
                     celda.append(creadiv(daticos[d]));
                 }else if(moment(diamostrado).isBefore(daticos[d].fecha_fin)//Si diamostrado es antes de fechafin y diamostrado es mayor a fecha inicial
                         &&moment(diamostrado).isAfter(daticos[d].fecha_inicia)){
-                    remuevediv(celda);
                     celda.append(creadiv(daticos[d]));
-                }else{
-                    remuevediv(celda);
                 }
             }
-
         }
     }
 })(jQuery);
