@@ -341,7 +341,7 @@
                 var diafinocup = moment(daticos[d].fecha_fin).clone();//dia de fin de ocupacion
                 if ((moment(diactual).isAfter(fechaInic) //Si esta despues de fechaInic -> inicio de semana mostrada y
                     && moment(diactual).isBefore( fechaFin))||mismaFecha(diactual,fechaInic)||mismaFecha(diactual, fechaFin)) {// si esta antes de fechaFin -> fin de la semana mostrada
-                    while (diactual <= diafinocup && diactual < fechaFin) {
+                    while ((diactual.isBefore(diafinocup) || mismaFecha(diactual,diafinocup))&& diactual.isBefore(fechaFin)) {
                         remuevediv(celda);//Nos aseguramos q el div no este ocupado
                         celda.append(creadiv(daticos[d]));
                         diactual = moment(diactual).add('day',1);
@@ -351,7 +351,7 @@
                     //&& moment(diafinocup).isBefore( fechaFin))){
                     diactual = fechaInic.clone();
                     celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+diactual.weekday());//como actualizamos diactual entonces debemos obtener la nueva celda
-                    while(diactual <= diafinocup){
+                    while(diactual.isBefore(diafinocup) || mismaFecha(diactual,diafinocup)){
                         remuevediv(celda);//Nos aseguramos q el div no este ocupado
                         celda.append(creadiv(daticos[d]));
                         diactual = moment(diactual).add('day',1);
