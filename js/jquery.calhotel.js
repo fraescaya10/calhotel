@@ -1,468 +1,517 @@
-//Plugin creacion calendario hotel
-(function ($, undefined) {
-    moment.lang('es');
-    c=0, x=0;
-    fechaInic=null;
-    fechaFin=null;
-    //Configuraciones por defecto
-    config_default = {
-        num_fila: 5,
-        dias_sem: ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab','Dom'],
-        datosroom: [],
-        haceClick: function(datos){},
-        clickCelda: function(id,ev){
-            //el $(this) es la celda
-            if ($(this).find('.evento').length) {
-                ev.preventDefault();
+
+;(function( $, window, document, undefined ){
+    var CalHotel = {
+        init: function( config_usuario, elem ){
+            moment.lang('es');
+            var self = this;
+            self.$elem = $(elem);
+            self.opc = $.extend( {},$.fn.calhotel.config_default,config_usuario );            
+            self.c = 0;// Para suma de semanas
+            self.x = 0;// Para suma de días
+            self.vista = self.opc.vistadef;
+            self.fechaActual = moment();
+            self.maquetar();
+            this.asignaEventos();
+        },
+        maquetar: function(){
+            var self = this;
+            self.cont_principal = $("<div class='contenedor-principal'></div>");
+            self.cont_secundario = $("<div class='contenedor-secundario'></div>");
+            self.cont_secundario.append(self.botonesSup());
+            self.cont_principal.append(self.cont_secundario);
+            self.$elem.append(self.cont_principal);
+            if (this.vista==='semana') {
+                this.vistaSemana();
+            }else if (this.vista==='dia') {
+                this.vistaDia();
+            }
+        },
+        botonesSup: function(){
+            var self = this;
+            var btnsCab = $("<div class='botones-cabecera'></div>");
+            var tblBtns = $("<table class='tbl-botones'></table>");
+            var cssbtn = "text-decoration:none;";
+            var clsbtn = "btn btn-default";
+            var tr = $("<tr></tr>");
+            var tdIzq = $("<td id='btns_izq'></td>");
+            var tdTit = $("<td id='tit_tabla'></td>");
+            var tdDer = $("<td id='btns_der'></td>");
+            //Botones de la izquierda            
+            var bAnt = $("<button type='button' class='"+clsbtn+"' id='btnant'><a style='"+cssbtn+"'>&laquo;</a></button>");
+            var bHoy = $("<button type='button' class='"+clsbtn+"' id='btnhoy'><a style='"+cssbtn+"'>Hoy</a></button>");
+            var bSig = $("<button type='button' class='"+clsbtn+"' id='btnsig'><a style='"+cssbtn+"'>&raquo;</a></button>");
+            bAnt.click(function(e){
+                self.anterior();
+            });
+            bHoy.click(function(e){
+                self.hoy();
+            });
+            bSig.click(function(e){
+                self.siguiente();
+            });
+            //Botones de la derecha
+            var bSem = $("<button type='button' class='"+clsbtn+"' id='btnSemana'><a style='"+cssbtn+"'>Semana</a></button>");
+            var bDia = $("<button type='button' class='"+clsbtn+"' id='btnDia'><a style='"+cssbtn+"'>Dia</a></button>");
+            bSem.click(function(e){
+                //~self.c=0;
+                self.vista='semana';
+                self.vistaSemana();
+                self.asignaEventos();
+            });
+            bDia.click(function(e){
+                self.x=0;
+                self.vista='dia';
+                self.vistaDia();
+                self.asignaEventos();
+            });
+            tdIzq.append(bAnt);
+            tdIzq.append(bHoy);
+            tdIzq.append(bSig);
+            tdDer.append(bSem);
+            tdDer.append(bDia);
+            tdTit.append("<h1 id='titFecha'>" + self.devuelveSemana()+ "</h1>");
+            tr.append(tdIzq);
+            tr.append(tdTit);
+            tr.append(tdDer);
+            tblBtns.append(tr);
+            btnsCab.append(tblBtns);
+            return btnsCab;            
+        },
+        devuelveSemana: function(){
+            var self = this;
+            var fecha = self.primerDiaSem();
+            self.iniSem = moment(fecha).startOf('week');
+            self.finSem = moment(fecha).endOf('week');
+            if (self.iniSem.isSame(self.finSem,'month')) {
+                return self.iniSem.format('MMMM D')+' - '+self.finSem.format('D'); 
             }else{
-                alert('Hola desde la celda: '+id);
+                return self.iniSem.format('MMMM D')+' - '+self.finSem.format('MMMM D');
             }
-        }
-    };
-
-    //con esto se llama desde javascript
-    $.fn.calhotel = function (config_usuario) {
-        config_default = $.extend(config_default, config_usuario);
-        this.each(function () {
-            var semana, cont, vistadef='semana';
-            cont = $(this);
-            semana = new vistaSemana(config_default);
-            dia = new vistaDia(config_default);
-            contenedor_principal = $("<div class='contenedor-principal'></div>"); //contiene a las tablas de botones y al div secundario
-            contenedor_secundario = $("<div class='contenedor-secundario'></div>");
-            tblBotones = creaBotonesSup();
-            contenedor_secundario.append(tblBotones);
-            poneSemana(0);
-            contenedor_principal.append(contenedor_secundario);
-            cont.append(contenedor_principal);
-            desactivabotonHoy($('#btnhoy'));
+        },
+        primerDiaSem : function(){
+            var self = this;
+            var fecha = moment(self.fechaActual).add('week', self.c);
+            return fecha.startOf('week');
+        },
+        vistaSemana: function(){
+            this.cont_secundario.find('.contenedor-tabla').remove();
+            var tblsem = this.maquetarTbl(this.tblCabeceraSem(),this.tblCuerpoSem());
+            this.cont_secundario.append(tblsem);
             $('#btnSemana').attr('disabled',true);
-            semana.ponerCuartosOcupados();
-            ponEventos();
-            
-            $('#btnsig').click(function(e){
-                if(vistadef==='semana'){
-                    c++;
-                    $('#titFecha').text(devuelveSemana(c));
-                    actualizaCabecerasSemana(primerdia(c));
-                    semana.ponerCuartosOcupados();
-                }else if(vistadef==='dia'){
-                    x++;
-                    var diamost = devuelveDia(x);
-                    $('#titFecha').text(diamost.format('MMMM D, YYYY'));
-                    actualizaCabeceraDia(x);
-                    dia.ponerCuartosOcupadosDia(diamost);
-                }
-                desactivabotonHoy($('#btnhoy'));
-            });
-
-            $('#btnant').click(function(e){
-                if(vistadef==='semana'){
-                    c--;
-                    $('#titFecha').text(devuelveSemana(c));
-                    actualizaCabecerasSemana(primerdia(c));
-                    semana.ponerCuartosOcupados();
-                }else if(vistadef==='dia'){
-                    x--;
-                    var diamost = devuelveDia(x);
-                    $('#titFecha').text(diamost.format('MMMM D, YYYY'));
-                    actualizaCabeceraDia(x);
-                    dia.ponerCuartosOcupadosDia(diamost);
-                }
-                desactivabotonHoy($('#btnhoy'));
-            });
-
-            $('#btnhoy').click(function(e){
-                if(vistadef==='semana'){
-                    c=0;
-                    $('#titFecha').text(devuelveSemana(c));
-                    actualizaCabecerasSemana(primerdia(c));
-                    semana.ponerCuartosOcupados();
-                }else if(vistadef==='dia'){
-                    x=0;
-                    var diamost = devuelveDia(x);
-                    $('#titFecha').text(diamost.format('MMMM D, YYYY'));
-                    actualizaCabeceraDia(x);
-                    dia.ponerCuartosOcupadosDia(diamost);
-                }
-                desactivabotonHoy($('#btnhoy'));
-            });
-
-            $('#btnSemana').click(function(e){
-                c=0;//desactivar si no se quiere que coja la semana actual
-                $('#titFecha').text(devuelveSemana(c));
-                poneSemana(1);
-                semana.ponerCuartosOcupados();
-                vistadef='semana';
-                $('#btnSemana').attr('disabled',true);
-                $('#btnDia').attr('disabled',false);
-                ponEventos();
-            });
-
-            $('#btnDia').click(function(e){
-                x=0;//Desactivar si no se quiere q coja el dia actual
-                //console.log('Si llega a dia');
-                var diamost = devuelveDia(x);
-                $('#titFecha').text(diamost.format('MMMM D, YYYY'));
-                poneDia();
-                vistadef='dia';
-                actualizaCabeceraDia(x);
-                dia.ponerCuartosOcupadosDia(diamost);
-                desactivabotonHoy($('#btnhoy'));
-                $('#btnSemana').attr('disabled',false);
-                $('#btnDia').attr('disabled',true);
-                ponEventos();
-            });
-
-            function poneSemana(opc){ //opc:1 si es llamada desde el btnSemana
-                if(opc === 1){
-                   contenedor_secundario.find('.contenedor-tabla').remove();
-                }
-                tblContenidos= semana.creaContenido();
-                contenedor_secundario.append(tblContenidos);
-            }
-
-            function poneDia(){
-                contenedor_secundario.find('.contenedor-tabla').remove();
-                tblContenidos = dia.creaTabla();
-                contenedor_secundario.append(tblContenidos);
-            }
-            
-            function ponEventos() {
-                console.log(vistadef);
-                if (vistadef==='semana') {
-                    //Eventos para las celdas
-                    $('.cont_tblcuerpo').on( "click", ".celda", function(ev) {
-                        config_default.clickCelda.call(this,this.id,ev);
-                    });
-                    
-                    $('.cont_tblcuerpo').on( "mousedown", ".celda", function(ev) {
-                        if ($(this).find('.evento').length) {
-                            ev.preventDefault();
-                        }else{
-                            this.bgColor = '#EFBDBD';
-                        }
-                    });
-                    $('.cont_tblcuerpo').on( "mouseup", ".celda", function(ev) {
-                        if ($(this).find('.evento').length) {
-                            ev.preventDefault();
-                        }else{
-                            this.bgColor = '';
-                        }
-                    });
-                }else{
-                    //Eventos para las celdas
-                    $('.cont_tblcuerpo').on( "click", ".celdadia", function(ev) {
-                        config_default.clickCelda.call(this,this.id,ev);
-                    });
-                    
-                    $('.cont_tblcuerpo').on( "mousedown", ".celdadia", function(ev) {
-                        if ($(this).find('.evento').length) {
-                            ev.preventDefault();
-                        }else{
-                            this.bgColor = '#EFBDBD';
-                        }
-                    });
-                    $('.cont_tblcuerpo').on( "mouseup", ".celdadia", function(ev) {
-                        if ($(this).find('.evento').length) {
-                            ev.preventDefault();
-                        }else{
-                            this.bgColor = '';
-                        }
-                    });
-                }
-                
-            }
-        });
-    };
-
-    function desactivabotonHoy(btn) {
-        var hoy = moment();
-        if (mismaFecha(hoy,fechaInic)||mismaFecha(hoy,fechaFin)//si la fecha actual es igual a fecha inicio o fechafin
-            ||((moment(hoy).isAfter(fechaInic))&&(moment(hoy).isBefore(fechaFin)))) {//si la fecha actual esta entre fechainic y fechafin
-            $(btn).attr("disabled", true);
-        }else{
-            $(btn).attr("disabled", false);
-        }
-    }
-
-    function creaBotonesSup() {
-        var html = "<div class='botones-cabecera'><table class='tbl-botones'>" +
-                "<tr>" +
-                "<td id='btns_izq'>" +
-                "<button type='button' class='btn btn-default' id='btnant'><a style='text-decoration:none;'>&laquo;</a></button>" +
-                "<button type='button' class='btn btn-default' id='btnhoy'><a style='text-decoration:none;'>Hoy</a></button>" +
-                "<button type='button' class='btn btn-default' id='btnsig'><a style='text-decoration:none;'>&raquo;</a></button>" +
-                "</td>" +
-                "<td id='tit_tabla'>" +
-                "<h1 id='titFecha'>" + devuelveSemana(c)+ "</h1>" +
-                "</td>" +
-                "<td id='btns_der'>" +
-                "<button type='button' class='btn btn-default' id='btnSemana'><a style='text-decoration:none;'>Semana</a></button>" +
-                "<button type='button' class='btn btn-default' id='btnDia'><a style='text-decoration:none;'>Dia</a></button>" +
-                "</td>" +
-                "</tr>" +
-                "</table></div>";
-
-            return html;
-    }
-
-    function devuelveSemana(incdec) {
-        var fecha = moment().add('week', incdec);
-        var iniSem = moment(fecha).startOf('week');//Inicia semana
-        var finSem = moment(fecha).endOf('week');//Finaliza semana
-        fechaInic= iniSem;
-        fechaFin = finSem;
-        if (moment(iniSem).month()===moment(finSem).month()) {
-            return iniSem.format('MMMM D')+' - '+finSem.format('D');
-        }else{
-            return iniSem.format('MMMM D')+' - '+finSem.format('MMMM D');
-        }
-    }
-
-    function devuelveDia(index){
-        var fecha = moment().add('day',index);
-        fechaInic = fecha;
-        fechaFin = fecha;
-        return fecha;
-    }
-
-    function primerdia(incdec) {
-        fecha = moment().add('week', incdec);
-        return moment(fecha).startOf('week');
-    }
-
-    function mismaFecha(f1,f2){
-        var esIgual = false;
-        if(moment(f1).isSame(f2,'year')&&//Cuando el diainicial es igual al dia mostrado
-            moment(f1).isSame(f2,'month')&&
-            moment(f1).isSame(f2,'day')){
-                esIgual = true;
-        }
-        return esIgual;
-    }
-
-    //pd= primer dia
-    function actualizaCabecerasSemana(pd) {
-        for(var i = 0; i<config_default.dias_sem.length;i++){
-            var d= moment(pd).add('day',(i)).date();
-            $('.dia'+i).html(config_default.dias_sem[i] +" "+d);
-        }
-    }
-
-    function actualizaCabeceraDia(d){
-        $('.celcabdia').html(devuelveDia(x).format('dddd').toUpperCase());
-    }
-
-    //**************************************** PARA LA VISTA DE SEMANA**********************************************
-    function vistaSemana (datos) {
-        this.creaContenido = creaContenido;
-        this.ponerCuartosOcupados = ponerCuartosOcupados;
-
-        function creaContenido() {
-            var pd = primerdia(c).date();
-            var tabla = creaTabla(pd);
-            return tabla;
-        }
-
-        function creaTabla(primerdia) {            
-            var divtbl = $("<div class='contenedor-tabla'></div>");
-            var cabecera = $("<div class='cont_tblcabecera'></div>");
-            var cuerpo = $("<div class='cont_tblcuerpo'></div>");
-            cabecera.append(creaCabeceraTbl(primerdia));
-            cuerpo.append(creaCuerpoTbl());
-            divtbl.append(cabecera);
-            divtbl.append(cuerpo);
-            return divtbl;
-        }
-
-        function creaCabeceraTbl(primerdia) {
-            var dias = datos.dias_sem;
-            var table = $("<table></table>");
+            $('#btnDia').attr('disabled',false);
+            this.actualizarTodo();
+        },
+        tblCabeceraSem: function(){
+            var tblh = $("<table></table>");
             var thead = $("<thead></thead>");
             var tr = $("<tr class='filasup'></tr>");
-            //Cabecera Rooms
             var th = $("<th class='celcab celroom'></th>");
             th.html('Room');
             tr.append(th);
-            //Dias de la semana
-            for (var i = 0; i < dias.length; i++) {
-                var h = $("<th class='celcab'></th>");
-                h.addClass('dia'+i).html(dias[i] +" "+(primerdia+i));
+            for (var i=0 ; i<7; i++) {
+                var h = $("<th class='celcab' id='dia"+i+"'></th>");
                 tr.append(h);
             }
-            //Celda vacia final
-            var v = $("<th class='calcabvac'></th>");
-            tr.append(v);
             thead.append(tr);
-            table.append(thead);
-            return table;
-        }
-
-        function creaCuerpoTbl() {
-            var table = $("<table></table>");
+            tblh.append(thead);
+            return tblh;
+        },
+        tblCuerpoSem: function(){
+            var tblc = $("<table></table>");
             var tbody = $("<tbody></tbody>");
-            for(var i=0 ; i <datos.num_fila;i++){
+            for (var i=0; i<this.opc.datosroom.length;i++) {
                 var tr = $("<tr class='filatbl'></tr>");
-                tr.attr('id','fila'+(i+1));
-                var tdr= $("<td class='celcab celroom'></td>");
-                tdr.html('Room '+(i+1));
+                //~tr.attr('id','fila'+i);
+                var tdr= $("<td class='celcab celroom' id='r"+this.opc.datosroom[i].cuartonro+"'></td>");
+                tdr.html(this.opc.datosroom[i].numdescri);
                 tr.append(tdr);
                 for(var c=0; c<7;c++){
                     var tdc = $("<td class='celda'></td>");
-                    if(eshoy(c)===true){
-                        tdc.addClass('celhoy');
-                    }
-                    tdc.attr('id', 'ct'+(i+1)+c);
+                    tdc.attr('id', 'ct'+(this.opc.datosroom[i].cuartonro)+c);
                     tr.append(tdc);
                 }
                 tbody.append(tr);
             }
-            table.append(tbody);
-            return table;
-        }
-
-        function eshoy(i){
-            var es = false;
-            var hoy = moment().weekday();
-            if(hoy===i){
-                es = true;
-            }
-            return es;
-        }
-        
-        
-        function ponerCuartosOcupados() {
-            var daticos = datos.datosroom;
-            limpiarCuartos();
-            for(var d=0; d<daticos.length; d++){
-                var celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+moment(daticos[d].fecha_inicia).weekday());
-                var diactual = moment(daticos[d].fecha_inicia).clone();//dia actual ocupacion
-                var diafinocup = moment(daticos[d].fecha_fin).clone();//dia de fin de ocupacion
-                if ((moment(diactual).isAfter(fechaInic) //Si esta despues de fechaInic -> inicio de semana mostrada y
-                    && moment(diactual).isBefore( fechaFin))||mismaFecha(diactual,fechaInic)||mismaFecha(diactual, fechaFin)) {// si esta antes de fechaFin -> fin de la semana mostrada
-                    while ((diactual.isBefore(diafinocup) || mismaFecha(diactual,diafinocup))&& diactual.isBefore(fechaFin)) {
-                        remuevediv(celda);//Nos aseguramos q el div no este ocupado
-                        celda.append(creadiv(daticos[d]));
-                        diactual = moment(diactual).add('day',1);
-                        celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+diactual.weekday());
-                    }
-                }else if((moment(diafinocup).isAfter(fechaInic) && moment(diactual).isBefore(fechaInic))){
-                    //&& moment(diafinocup).isBefore( fechaFin))){
-                    diactual = fechaInic.clone();
-                    celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+diactual.weekday());//como actualizamos diactual entonces debemos obtener la nueva celda
-                    while(diactual.isBefore(diafinocup) || mismaFecha(diactual,diafinocup)){
-                        remuevediv(celda);//Nos aseguramos q el div no este ocupado
-                        celda.append(creadiv(daticos[d]));
-                        diactual = moment(diactual).add('day',1);
-                        celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro+''+diactual.weekday());
-                    }
-                }
-            }
-        }
-    }
-
-    function creadiv(datos) {
-        var div = $("<div class='evento'></div>");
-        var h5 = $('<h5></h5>');
-        var p = $('<p></p>');
-        
-        h5.html(moment(datos.fecha_inicia).hour()+':'+moment(datos.fecha_inicia).minute()+
-                        ' - '+moment(datos.fecha_fin).hour()+':'+moment(datos.fecha_fin).minute());
-        p.html(datos.nombre_persona);        
-        
-        div.append(h5);
-        div.append(p);
-        div.css({
-            border: '1px solid gray',
-            borderRadius: '5px',
-            boxShadow: '1px 1px 1px 1px rgba(0,0,0,0.3)',
-            backgroundColor: datos.color===undefined ? 'red':datos.color, //color rojo para ocupado
-            width: '95%',
-            cursor:'pointer'
-            //left: left,
-            //top: top
-        }).click(function(ev){
-            config_default.haceClick.call(this,datos);
-        });
-        return div;
-    }
-    
-    function remuevediv(celda){
-        celda.find('div').remove();
-    }
-
-    function limpiarCuartos(){
-        $('.cont_tblcuerpo').find('.evento').remove();
-    }
-
-
-
-    //**************************************** PARA LA VISTA DE DIA **********************************************
-    function vistaDia (datos){
-
-        this.creaTabla= creaTabla;
-        this.ponerCuartosOcupadosDia = ponerCuartosOcupadosDia;
-        
-        function creaTabla() {            
-            var divtbl = $("<div class='contenedor-tabla'></div>");
-            var cabecera = $("<div class='cont_tblcabecera'></div>");
-            var cuerpo = $("<div class='cont_tblcuerpo'></div>");
-            cabecera.append(creaCabeceraTbl());
-            cuerpo.append(creaCuerpoTbl());
-            divtbl.append(cabecera);
-            divtbl.append(cuerpo);
-            return divtbl;
-        }
-
-        function creaCabeceraTbl() {
-            var table = $("<table></table>");
+            tblc.append(tbody);
+            return tblc;
+        },
+        vistaDia: function(){
+            this.cont_secundario.find('.contenedor-tabla').remove();
+            var tbldia = this.maquetarTbl(this.tblCabeceraDia(),this.tblCuerpoDia());
+            this.cont_secundario.append(tbldia);
+            $('#btnSemana').attr('disabled',false);
+            $('#btnDia').attr('disabled',true);
+            this.actualizarTodo();
+        },
+        tblCabeceraDia: function(){
+            var tblcab = $("<table></table>");
             var thead = $("<thead></thead>");
             var tr = $("<tr class='filasupdia'></tr>");
-            //Cabecera Rooms
             var th = $("<th class='celcab celroom'></th>");
-            //Celda dia
             var thd = $("<th class='celcabdia'></th>");
-            //Celda vacia final
             var v = $("<th class='calcabvac'></th>");
             th.html('Room');
             tr.append(th);
             tr.append(thd);
             tr.append(v);
             thead.append(tr);
-            table.append(thead);
-            return table;
-        }
-
-        function creaCuerpoTbl() {
+            tblcab.append(thead);
+            return tblcab;
+        },
+        tblCuerpoDia: function(){
             var table = $("<table></table>");
             var tbody = $("<tbody></tbody>");
-            for(var i=0 ; i <datos.num_fila;i++){
+            for(var i=0 ; i <this.opc.datosroom.length;i++){
                 var tr = $("<tr class='filatbldia'></tr>");
-                var tdr= $("<td class='celcab celroom'></td>");
+                var tdr= $("<td class='celcab celroom'id='r"+this.opc.datosroom[i].cuartonro+"'></td>");
                 var tdc = $("<td class='celdadia'></td>");
-                tdr.html('Room '+(i+1));
-                tdc.attr('id', 'ct'+(i+1));
+                tdr.html(this.opc.datosroom[i].numdescri);
+                tdc.attr('id', 'ct'+(this.opc.datosroom[i].cuartonro));
                 tr.append(tdr);
                 tr.append(tdc);
                 tbody.append(tr);
             }
             table.append(tbody);
             return table;
-        }
-
-        function ponerCuartosOcupadosDia(diamostrado){//objeto moment del dia mostrado
-            var daticos = datos.datosroom;
-            limpiarCuartos();
-            for (var d=0; d<daticos.length; d++) {
-                 var celda = $('.cont_tblcuerpo').find('#ct'+daticos[d].cuartonro);
-                if(mismaFecha(daticos[d].fecha_inicia,diamostrado)||mismaFecha(daticos[d].fecha_fin,diamostrado)){
-                    celda.append(creadiv(daticos[d]));
-                }else if(moment(diamostrado).isBefore(daticos[d].fecha_fin)//Si diamostrado es antes de fechafin y diamostrado es mayor a fecha inicial
-                    &&moment(diamostrado).isAfter(daticos[d].fecha_inicia)){
-                    celda.append(creadiv(daticos[d]));
+        },
+        maquetarTbl: function(tblcab, tblcue){
+            var divtbl = $("<div class='contenedor-tabla'></div>");
+            var cabecera = $("<div class='cont_tblcabecera'></div>");
+            var cuerpo = $("<div class='cont_tblcuerpo'></div>");
+            cabecera.append(tblcab);
+            cuerpo.append(tblcue);
+            divtbl.append(cabecera);
+            divtbl.append(cuerpo);
+            return divtbl;
+        },
+        actualizarTodo: function(){
+            this.actualizaCabecerasTit();
+            this.desactivaHoy();
+            this.cuartosOcupados();
+        },
+        actualizaCabecerasTit: function(){
+            if (this.vista==='semana') {
+                var pd = this.primerDiaSem();
+                for (var i=0; i<7; i++) {
+                    var da = moment(pd).add('day',i);
+                    $('#dia'+i).html(da.format('ddd ')+da.date());
+                }
+                $('#titFecha').text(this.devuelveSemana());
+            }else if (this.vista==='dia') {
+                this.diamostrado=moment(this.iniSem).add('day', this.x);
+                $('.celcabdia').html(this.diamostrado.format('dddd').toUpperCase());
+                $('#titFecha').text(this.diamostrado.format('MMMM D, YYYY'));
+            }
+        },
+        //~devuelveDia: function(){
+            //~this.diamostrado = moment(this.iniSem).add('day', this.x); 
+        //~},
+        siguiente: function(){
+            if (this.vista === 'semana') {
+                this.c=this.c+1;
+            }else if (this.vista === 'dia') {
+                this.x = this.x+1;
+                //~console.log('Valor de x siguiente: '+this.x);
+                //~if(this.x>6){
+                    //~this.c=this.c+1;
+                //~}
+            }
+            this.actualizarTodo();
+        },
+        anterior: function(){
+            if (this.vista === 'semana') {
+                this.c=this.c-1;
+            }else if (this.vista === 'dia') {
+                this.x = this.x-1;
+                //~console.log('Valor de x anterior: '+this.x);
+                //~if(this.x<0 && this.x===-1){
+                    //~this.c=this.c-1;
+                //~}
+            }
+            this.actualizarTodo();
+        },
+        hoy: function(){
+            if (this.vista === 'semana') {
+                this.c = 0;
+            }else if (this.vista === 'dia') {
+                // Se regresa a la primera semana
+                this.c = 0; 
+                var fecha = self.primerDiaSem();
+                self.iniSem = moment(fecha).startOf('week');
+                self.finSem = moment(fecha).endOf('week');
+                //Se asigna x = 0 para q apunte a lunes
+                this.x = self.fechaActual.weekday();
+            }
+            this.actualizarTodo();
+        },
+        desactivaHoy: function(){
+            self = this;
+            if(self.vista ==='semana'){
+                if (self.esFechaIgual(self.fechaActual, self.iniSem)||
+                    self.esFechaIgual(self.fechaActual, self.finSem)||
+                    (self.fechaActual.isAfter(self.iniSem)&&
+                     self.fechaActual.isBefore(self.finSem))) {
+                    $('#btnhoy').attr('disabled',true);
+                }else{
+                    $('#btnhoy').attr('disabled',false);
+                }
+            }else if(self.vista==='dia'){
+                if(self.esFechaIgual(self.diamostrado, self.fechaActual)){
+                    $('#btnhoy').attr('disabled',true);
+                }else{
+                    $('#btnhoy').attr('disabled',false);
+                }
+            }
+            
+        },
+        esFechaIgual: function(f1,f2){
+            if(moment(f1).isSame(f2,'year')&&//Cuando el diainicial es igual al dia mostrado
+            moment(f1).isSame(f2,'month')&&
+            moment(f1).isSame(f2,'day')){
+                return true;
+            }else{
+                return false;
+            }
+        },
+        cuartosOcupados: function(){
+            this.limpiarCuartos();
+            var datos = this.opc.datosroom;
+            if (this.vista === 'semana') {
+                for(var d=0; d <datos.length; d++){
+                    var celda = $('.cont_tblcuerpo').find('#ct'+datos[d].cuartonro+moment(datos[d].fecha_inicia).weekday());
+                    var diactual = moment(datos[d].fecha_inicia);//dia actual ocupacion
+                    var diafinocup = moment(datos[d].fecha_fin);//dia de fin de ocupacion
+                    if ((moment(diactual).isAfter(this.iniSem)&&//Si esta despues de fechaInic -> inicio de semana mostrada y
+                        moment(diactual).isBefore(this.finSem))||
+                        this.esFechaIgual(diactual,this.iniSem)||
+                        this.esFechaIgual(diactual, this.finSem)){// si esta antes de fechaFin -> fin de la semana mostrada
+                        while ((diactual.isBefore(diafinocup) ||
+                                this.esFechaIgual(diactual,diafinocup))&&
+                               diactual.isBefore(this.finSem)) {
+                            this.remuevediv(celda);//Nos aseguramos q el div no este ocupado
+                            celda.append(this.creaDiv(datos[d], diactual));
+                            diactual = moment(diactual).add('day',1);
+                            celda = $('.cont_tblcuerpo').find('#ct'+datos[d].cuartonro+''+diactual.weekday());
+                        }
+                    }else if((moment(diafinocup).isAfter(this.iniSem) && moment(diactual).isBefore(this.iniSem))){
+                        //&& moment(diafinocup).isBefore( fechaFin))){
+                        diactual = moment(this.iniSem);
+                        celda = $('.cont_tblcuerpo').find('#ct'+datos[d].cuartonro+''+diactual.weekday());//como actualizamos diactual entonces debemos obtener la nueva celda
+                        while(diactual.isBefore(diafinocup) || this.esFechaIgual(diactual,diafinocup)){
+                            this.remuevediv(celda);//Nos aseguramos q el div no este ocupado
+                            celda.append(this.creaDiv(datos[d]));
+                            diactual = moment(diactual).add('day',1);
+                            celda = $('.cont_tblcuerpo').find('#ct'+datos[d].cuartonro+''+diactual.weekday());
+                        }
+                    }
+                }
+            }else if (this.vista === 'dia') {
+                var diamostrado = self.diamostrado;
+                for (var i=0; i<datos.length; i++) {
+                    var celd = $('.cont_tblcuerpo').find('#ct'+datos[i].cuartonro);
+                    if(this.esFechaIgual(datos[i].fecha_inicia,diamostrado)||this.esFechaIgual(datos[i].fecha_fin,diamostrado)){
+                        celd.append(this.creaDiv(datos[i],diamostrado));
+                    }else if(moment(diamostrado).isBefore(datos[i].fecha_fin)&&//Si diamostrado es antes de fechafin y diamostrado es mayor a fecha inicial
+                        moment(diamostrado).isAfter(datos[i].fecha_inicia)){
+                        celd.append(this.creaDiv(datos[i],diamostrado));
+                    }
+                }
+            }
+        },
+        creaDiv: function(datos,diactual){
+            var self = this;
+            var div = $("<div class='evento'></div>");
+            var img = $("<div class='imagen'><span class='glyphicon glyphicon-arrow-right'></span></div>");
+            var h5 = $("<div class='cabevt'></div>");
+            var p = $("<div class='txevt'></div>");
+            if(self.esFechaIgual(datos.fecha_inicia,datos.fecha_fin)){
+                img.css('color','yellow');
+                h5.html(moment(datos.fecha_inicia).hour()+':'+moment(datos.fecha_inicia).minute()+
+                            ' - '+moment(datos.fecha_fin).hour()+':'+moment(datos.fecha_fin).minute());
+            }else if(moment(diactual).isBefore(datos.fecha_fin)){
+                img.find('span').addClass('pull-left').css('color','blue');
+                h5.html(moment(datos.fecha_inicia).hour()+':'+moment(datos.fecha_inicia).minute());
+            }else if(this.esFechaIgual(diactual, datos.fecha_fin)){
+                img.find('span').addClass('pull-right').css('color','red');
+                h5.html(moment(datos.fecha_fin).hour()+':'+moment(datos.fecha_fin).minute());
+            }
+            p.html(datos.nombre_persona);  
+            div.append(img);  
+            div.append(h5);
+            div.append(p);       
+            div.css({
+                border: '1px solid #1E90FF',
+                borderRadius: '5px',
+                boxShadow: '1px 1px 1px 1px rgba(0,0,0,0.3)',
+                backgroundColor: function(){
+                    switch (datos.estado) {
+                        case 1:                       
+                            return 'green';
+                        case 2:
+                            return '#76E0E0';
+                        case 3:
+                            return 'red';
+                        default:
+                            return '';
+                    }
+                }, 
+                width: '95%',
+                heigth: '95%',
+                cursor:'pointer'
+            }).click(function(ev){
+                self.opc.clickHuesped.call(this,datos);
+            });
+            return div;
+        },
+        remuevediv: function(celda){
+            celda.find('div').remove();
+        },
+        limpiarCuartos: function(){
+            //~$('.cont_tblcuerpo').find('.evento').remove();
+            $('.evento').each(function(){
+                this.remove();
+            });
+        },
+        asignaEventos: function(){
+            var self = this;
+            if (this.vista === 'semana') {
+                //Celdas cuerpo de tabla                
+                var activo = false;
+                var celda1, celda2;
+                var cuartos = [];
+                $('.cont_tblcuerpo').on( "mousedown", ".celda", function(ev) {
+                    if ($(this).find('.evento').length) {
+                        ev.preventDefault();
+                    }else{
+                        activo=true;
+                        $('.marcado').removeClass('marcado');
+                        ev.preventDefault();
+                        $(this).addClass('marcado');
+                        celda1=this;
+                    }
+                });
+                $('.cont_tblcuerpo').on( "mousemove", ".celda", function(ev) {
+                    if ($(this).find('.evento').length) {
+                        ev.preventDefault();
+                    }else{
+                       if(activo){
+                           $(this).addClass('marcado');
+                       }
+                    }
+                });
+                $('.cont_tblcuerpo').on( "mouseup", ".celda", function(ev) {
+                    if ($(this).find('.evento').length) {
+                        ev.preventDefault();
+                    }else{
+                       activo=false;
+                       celda2=this;
+                       //Para cada celda con clase .marcado
+                       $('.marcado').each(function(indice, elemento){
+                           self.llenacuartosReserv(cuartos,elemento);
+                       });
+                       self.activaClickCelda(celda1,celda2, cuartos);
+                       $('.marcado').removeClass('marcado'); // Se elimina todo lo marcado
+                       cuartos = []; // Se resetea el arreglo de cuartos
+                    }
+                });
+                
+            }else if(this.vista === 'dia'){
+               var activo = false;
+               var cuartos = [];
+               $('.cont_tblcuerpo').on( "mousedown", ".celdadia", function(ev) {
+                    if ($(this).find('.evento').length) {
+                        ev.preventDefault();
+                    }else{
+                        activo=true;
+                        $('.marcado').removeClass('marcado');
+                        ev.preventDefault();
+                        $(this).addClass('marcado');
+                    }
+                });
+                $('.cont_tblcuerpo').on( "mousemove", ".celdadia", function(ev) {
+                    if ($(this).find('.evento').length) {
+                        ev.preventDefault();
+                    }else{
+                       if(activo){
+                           $(this).addClass('marcado');
+                       }
+                    }
+                });
+                $('.cont_tblcuerpo').on( "mouseup", ".celdadia", function(ev) {
+                    if ($(this).find('.evento').length) {
+                        ev.preventDefault();
+                    }else{
+                       activo=false;
+                       //Para cada celda con clase .marcado
+                       $('.marcado').each(function(indice, elemento){
+                           self.llenacuartosReserv(cuartos,elemento);
+                       });
+                       self.activaClickCelda(this,this, cuartos);
+                       $('.marcado').removeClass('marcado'); // Se elimina todo lo marcado
+                       cuartos = []; // Se resetea el arreglo de cuartos
+                    }
+                });
+                
+            }
+        },
+        llenacuartosReserv: function(cua, celda){
+            if(this.vista === 'semana'){
+                var id = parseInt(celda.id.substring(celda.id.length-1));
+                var cuarto = parseInt(celda.id.substring(2,(celda.id.length-1)));
+                var des_cuar = $('#r'+cuarto).html(); 
+                cua.push({
+                    'nro':cuarto,
+                    'descripcion': des_cuar
+                });
+            }else if(this.vista === 'dia'){
+                var cuarto = parseInt(celda.id.substring(2,(celda.id.length)));
+                var des_cuar = $('#r'+cuarto).html(); 
+                cua.push({
+                    'nro':cuarto,
+                    'descripcion': des_cuar
+                });
+            }
+            
+        },
+        activaClickCelda: function(celdaini, celdafin, cuartos){
+            if(this.vista==='semana'){
+                //Calculo de fechas
+                var idi = parseInt(celdaini.id.substring(celdaini.id.length-1));
+                var fecini = this.fechaCelda(idi);
+                var idf = parseInt(celdafin.id.substring(celdafin.id.length-1));
+                var fecfin = this.fechaCelda(idf);
+                self.opc.selectCelda.call(this,fecini,fecfin,cuartos); //verificar el envio de this como parametro en vez de celdafin
+            }else if(this.vista==='dia'){
+                self.opc.selectCelda.call(this,this.diamostrado,this.diamostrado,cuartos);
+            }
+        },
+        fechaCelda: function(idCelda){
+            if(this.vista==='semana'){
+                var self = this;
+                if(idCelda === 0){
+                    return moment(self.iniSem);
+                }else if( idCelda === 6){
+                    return moment(self.finSem);
+                }else{
+                    return moment(self.iniSem).add('day', idCelda);            
                 }
             }
         }
     }
-})(jQuery);
+    
+    $.fn.calhotel = function( config_usuario ){
+        return this.each(function(){
+            var cal = Object.create( CalHotel );
+            cal.init( config_usuario, this ); // Llamamos al metodo constructor
+        });
+    };
+    
+    $.fn.calhotel.config_default = {
+        datosroom:[],
+        vistadef: 'semana',
+        clickHuesped: function(datos){},
+        selectCelda: function(fecini,fecfin,cuartos){}
+    };
+    
+})( jQuery, window, document );
+

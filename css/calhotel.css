@@ -11,7 +11,6 @@
 
 .tbl-botones, .contenedor-tabla,.tbldiasAgenda{
     width: 100%;
-    border: 1px solid #9FD2E5; /*Cambiar luego*/
 }
 
 .tbl-botones, .tbl-botones h1{
@@ -66,7 +65,16 @@
     opacity: 0.75;
     z-index: 30;
 }
-.evento p, .evento h5{
+
+.cabevt, .txevt{
     font-size: 1em;
-    color:  #ccc;
+    color:  #000000;
+/*
+    text-shadow: 1px 1px #7F7F7F;
+*/
 }
+.marcado {
+    background-color: #EB9D9D;
+}
+
+
