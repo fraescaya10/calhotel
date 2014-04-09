@@ -29,13 +29,14 @@
 .cont_tblcuerpo{
     height: 30em;
     overflow: auto;
+    border-bottom: 1px solid #C0D0D6;
 }
 .cont_tblcabecera{
     overflow: hidden;
 }
 
 .filatbl, .filatbldia{
-    height: 6em;
+    height: 9em;
 }
 .celhoy{
     background-color: rgba(208,221,225,0.5);
@@ -45,7 +46,7 @@
     width: 13.5%;
 }
 .celda , .filatbl .celroom, .filasup,.filatbldia .celroom, .filasupdia , .celdadia{
-    border: 1px solid #9FD2E5;
+    border: 1px solid #C0D0D6;
 }
 
 .celroom{
@@ -63,7 +64,8 @@
 .evento{
     margin: auto;
     opacity: 0.75;
-    z-index: 30;
+    position: relative;
+    z-index: 100;
 }
 
 .cabevt, .txevt{
@@ -74,7 +76,16 @@
 */
 }
 .marcado {
-    background-color: #EB9D9D;
+    background-color: rgba(255,192,203,0.5); 
 }
+.diactual{
+    background-color: rgba(30,144,255,0.1);
+}
+.reservado{background-color: #85D1D1;}  
+.ocupado {background-color: #28CB28;}
+.mantenimiento{background-color: #EFEF52;}
+.bloqueado{background-color: #BFBFBF;}
+.pagado{background-color: #EB74C2;}   
+.resnocump{background-color: #E58845;}                
 
 
