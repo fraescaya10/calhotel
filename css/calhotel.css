@@ -75,17 +75,16 @@
     text-shadow: 1px 1px #7F7F7F;
 */
 }
-.marcado {
-    background-color: rgba(255,192,203,0.5); 
-}
-.diactual{
-    background-color: rgba(30,144,255,0.1);
-}
+.marcado {background-color: rgba(255,192,203,0.5);}
+.diactual{background-color: rgba(30,144,255,0.1);}
 .reservado{background-color: #85D1D1;}  
 .ocupado {background-color: #28CB28;}
 .mantenimiento{background-color: #EFEF52;}
 .bloqueado{background-color: #BFBFBF;}
 .pagado{background-color: #EB74C2;}   
-.resnocump{background-color: #E58845;}                
+.resnocump{background-color: #E58845;}      
+.f_inicia{color:blue;}
+.f_medio{color:#8B6914;}
+.f_termina{color:red;}        
 
 

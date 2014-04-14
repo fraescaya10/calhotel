@@ -17,116 +17,120 @@
     <div class="calhotel">
     </div>
     <script type="text/javascript">
+        //~$('.calhotel').calhotel();
+        //~$('.calhotel').calhotel('cambiaVista','semana');
+        //~$('.calhotel').calhotel({vistadef:'dia'});
+        //~$('.calhotel').calhotel('getVista');
         $('.calhotel').calhotel({
-        rooms:[
-            {
-                ser_codigo:1,//codigo de servicio
-                cuartonro:101,
-                numdescri: '101 EJS',
-                numcamas: 1
-            },
-            {
-                ser_codigo:2,//codigo de servicio
-                cuartonro:102,
-                numdescri: '102 EJS',
-                numcamas: 1
-            },
-            {
-                ser_codigo:3,//codigo de servicio
-                cuartonro:103,
-                numdescri: '103 EJS',
-                numcamas: 1
-            },
-            {
-                ser_codigo:4,//codigo de servicio
-                cuartonro:104,
-                numdescri: '104 EJD',
-                numcamas: 2
-            },
-            {
-                ser_codigo:5,//codigo de servicio
-                cuartonro:105,
-                numdescri: '105 EJD',
-                numcamas: 2
-            },
-            {
-                ser_codigo:6,//codigo de servicio
-                cuartonro:106,
-                numdescri: '106 EJT',
-                numcamas: 3
-            }
-            
-        ],
-        datosroom:[
-            {
-                fecha_inicia: moment('2014-04-09 10:40'), //obligatorio
-                fecha_fin: moment('2014-04-09 11:50'), //obligatorio
-                nombre_persona: 'Sr. Lopez',//obligatorio
-                cuartonro:101,
-                estado: 1 //ocupado
-            },
-            {
-                fecha_inicia: moment('2014-04-11 07:00'), //obligatorio
-                fecha_fin: moment('2014-04-12 19:00'), //obligatorio
-                nombre_persona: 'Sr. Almeida',//obligatorio
-                cuartonro:102,
-                estado: 0 //reservado
-            },
-            {
-                fecha_inicia: moment('2014-04-10 12:00'), //obligatorio
-                fecha_fin: moment('2014-04-10 13:00'), //obligatorio
-                nombre_persona: 'Mantenimiento',//obligatorio
-                cuartonro:104,
-                estado: 2
-            },
-            {
-                fecha_inicia: moment('2014-04-07 12:00'), //obligatorio
-                fecha_fin: moment('2014-04-08 13:00'), //obligatorio
-                nombre_persona: 'Bloqueado',//obligatorio
-                cuartonro:105,
-                estado: 3//bloqueado
-            },
-            {
-                fecha_inicia: moment('2014-04-03 12:00'), //obligatorio
-                fecha_fin: moment('2014-04-03 13:00'), //obligatorio
-                nombre_persona: 'Sr. Vargas',//obligatorio
-                cuartonro:103,
-                estado: 4 //pagado
-            },
-            {
-                fecha_inicia: moment('2014-04-03 12:00'), //obligatorio
-                fecha_fin: moment('2014-04-03 13:00'), //obligatorio
-                nombre_persona: 'Sr. Vargas',//obligatorio
-                cuartonro:101,
-                estado: 4 //pagado
-            }
-            
-            
-        ],
-        clickHuesped: function(datos){
-            alert('Nombre: '+ datos.nombre_persona+"\n"+'Cuarto: '+ datos.cuartonro);
-            //console.log('Nombre: '+ datos.nombre_persona);
-            //console.log('Cuarto: '+ datos.cuartonro);
-            //console.log(datos.nombre_persona);
-        },
-        selectCelda: function(fecini,fecfin,cuartos){
-            var cts = '';
-            var aux = '';
-            var f='';
-            if(fecini.isSame(fecfin)){
-                f=fecini.format('dddd D [de] MMMM, YYYY ');
-            }else{
-                f=fecini.format('dddd D [de] MMMM, YYYY ')+' - '+fecfin.format('dddd D [de] MMMM, YYYY ');
-            }
-            for(var i=0; i<cuartos.length;i++){
-                if(aux !== cuartos[i].descripcion){
-                    cts+='[ '+cuartos[i].descripcion + ' ] ';
-                    aux = cuartos[i].descripcion;
+            //~vistadef: 'dia',
+            rooms:[
+                {
+                    ser_codigo:1,//codigo de servicio
+                    cuartonro:101,
+                    numdescri: '101 EJS',
+                    numcamas: 1
+                },
+                {
+                    ser_codigo:2,//codigo de servicio
+                    cuartonro:102,
+                    numdescri: '102 EJS',
+                    numcamas: 1
+                },
+                {
+                    ser_codigo:3,//codigo de servicio
+                    cuartonro:103,
+                    numdescri: '103 EJS',
+                    numcamas: 1
+                },
+                {
+                    ser_codigo:4,//codigo de servicio
+                    cuartonro:104,
+                    numdescri: '104 EJD',
+                    numcamas: 2
+                },
+                {
+                    ser_codigo:5,//codigo de servicio
+                    cuartonro:105,
+                    numdescri: '105 EJD',
+                    numcamas: 2
+                },
+                {
+                    ser_codigo:6,//codigo de servicio
+                    cuartonro:106,
+                    numdescri: '106 EJT',
+                    numcamas: 3
                 }
+                
+            ],
+            datosroom:[
+                {
+                    fecha_inicia: moment('2014-04-14 10:40'), //obligatorio
+                    fecha_fin: moment('2014-04-14 11:50'), //obligatorio
+                    nombre_persona: 'Sr. Lopez',//obligatorio
+                    cuartonro:101,
+                    estado: 1 //ocupado
+                },
+                {
+                    fecha_inicia: moment('2014-04-15 07:00'), //obligatorio
+                    fecha_fin: moment('2014-04-16 19:00'), //obligatorio
+                    nombre_persona: 'Sr. Almeida',//obligatorio
+                    cuartonro:102,
+                    estado: 0 //reservado
+                },
+                {
+                    fecha_inicia: moment('2014-04-16 12:00'), //obligatorio
+                    fecha_fin: moment('2014-04-16 13:00'), //obligatorio
+                    nombre_persona: 'Mantenimiento',//obligatorio
+                    cuartonro:104,
+                    estado: 2
+                },
+                {
+                    fecha_inicia: moment('2014-04-17 12:00'), //obligatorio
+                    fecha_fin: moment('2014-04-17 13:00'), //obligatorio
+                    nombre_persona: 'Bloqueado',//obligatorio
+                    cuartonro:105,
+                    estado: 3//bloqueado
+                },
+                {
+                    fecha_inicia: moment('2014-04-11 12:00'), //obligatorio
+                    fecha_fin: moment('2014-04-11 13:00'), //obligatorio
+                    nombre_persona: 'Sr. Vargas',//obligatorio
+                    cuartonro:103,
+                    estado: 4 //pagado
+                },
+                {
+                    fecha_inicia: moment('2014-04-13 12:00'), //obligatorio
+                    fecha_fin: moment('2014-04-13 13:00'), //obligatorio
+                    nombre_persona: 'Sr. Vargas',//obligatorio
+                    cuartonro:101,
+                    estado: 4 //pagado
+                }
+            ],
+            clickHuesped: function(datos){
+                //~datos.estado = 1;
+                alert('Nombre: '+ datos.nombre_persona+"\n"+'Cuarto: '+ datos.cuartonro);
+                //~$('.calhotel').calhotel('renderOcupados');
+            },
+            selectCelda: function(fecini,fecfin,cuartos){
+                var cts = '';
+                var aux = '';
+                var f='';
+                if(fecini.isSame(fecfin)){
+                    f=fecini.format('dddd D [de] MMMM, YYYY ');
+                }else{
+                    f=fecini.format('dddd D [de] MMMM, YYYY ')+' - '+fecfin.format('dddd D [de] MMMM, YYYY ');
+                }
+                for(var i=0; i<cuartos.length;i++){
+                    cts+='[ '+cuartos[i].numdescri + ' ] ';
+                }
+                alert(f+'\n'+cts);
             }
-            alert(f+'\n'+cts);
-        }
-    });
+        });
+        //~ $('.calhotel').calhotel('renderOcupados');
+        //~$('.calhotel').calhotel('anterior');
+        //~$('.calhotel').calhotel('cambiaVista','dia');
+        //~$('.calhotel').calhotel('siguiente');
+    
     </script>
 </body>
 
