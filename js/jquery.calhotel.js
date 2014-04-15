@@ -25,8 +25,10 @@
     };
     var eventos={
         /*o.evento.call(this);*/
-        clickHuesped: function(datos) {},
-        selectCelda: function(fecini, fecfin, cuartos) {}
+        clickHuesped: function(huesped) {},//llamado al hacer click en un div
+        selectCelda: function(fecini, fecfin, cuartos) {},//llamado al seleccionar la celda
+        renderHuesped: function(huesped){}//llamado despues de renderizar el huesped en cada cuarto
+        
     };
     var metodos={
         init : function( opciones ) {   
@@ -79,6 +81,10 @@
         m.renderOcupados = function (){
             _renderOcupados();
         };
+        m.updateHuesped = function(huesped){
+            _updateHuesped(huesped);
+        };
+        
                 
         //**************************** METODOS PRIVADOS ***********************
         function _maquetar(){
@@ -94,6 +100,7 @@
             if(self.vista === 'semana'){
                 _vistaSemana();
                 _callEvents();
+                
             }else if(self.vista === 'dia'){
                 _vistaDia();
                 _callEvents();
@@ -292,9 +299,13 @@
                 $('#titFecha').text(_devuelveSemana());
             }else if (self.vista === 'dia'){
                 self.diamostrado = moment(self.iniSem).add('day', self.x);
-                $('.celcabdia').html(self.diamostrado.format('dddd').toUpperCase());
-                $('#titFecha').text(self.diamostrado.format('MMMM D, YYYY'));
+                _cabeceraDia();
             }
+        }
+        
+        function _cabeceraDia(){
+            $('.celcabdia').html(self.diamostrado.format('dddd').toUpperCase());
+            $('#titFecha').text(self.diamostrado.format('MMMM D, YYYY'));
         }
         
         function _siguiente(){
@@ -323,7 +334,6 @@
                 var fecha = _primerDiaSem();
                 self.iniSem = moment(fecha).startOf('week');
                 self.finSem = moment(fecha).endOf('week');
-                //Se asigna x = 0 para q apunte a lunes
                 self.x = self.fechaActual.weekday();
             }
             _actualizarTodo();
@@ -360,9 +370,9 @@
         }
         
         function _esFechaIgual(f1,f2){
-            if (moment(f1).isSame(f2, 'year') && 
-                moment(f1).isSame(f2, 'month') &&
-                moment(f1).isSame(f2, 'day')) {
+            var fe1 = moment(f1).format('YYYY-MM-DD');
+            var fe2 = moment(f2).format('YYYY-MM-DD');
+            if (moment(fe1).isSame(fe2)) {
                 return true;
             } else {
                 return false;
@@ -370,11 +380,31 @@
         }
         
         function _esFechaEntre(fecha,fechaStart,fechaEnd){
-            if ((fecha.isAfter(fechaStart) && fecha.isBefore(fechaEnd)) ||
+            if ((_esDespues(fecha, fechaStart)&& _esAntes(fecha,fechaEnd)) ||
                 _esFechaIgual(fecha, fechaStart) ||
                 _esFechaIgual(fecha, fechaEnd)) {
                 return true;
             } else {
+                return false;
+            }
+        }
+        
+        function _esAntes(f1,f2){
+            var fe1 = moment(f1).format('YYYY-MM-DD');
+            var fe2 = moment(f2).format('YYYY-MM-DD');
+            if (moment(fe1).isBefore(fe2)){
+                return true;
+            }else{
+                return false;
+            }
+        }
+        
+        function _esDespues(f1,f2){
+            var fe1 = moment(f1).format('YYYY-MM-DD');
+            var fe2 = moment(f2).format('YYYY-MM-DD');
+            if (moment(fe1).isAfter(fe2)){
+                return true;
+            }else{
                 return false;
             }
         }
@@ -389,13 +419,14 @@
             var datos = o.datosroom;
             if(self.vista === 'semana'){
                 for (i = 0; i < datos.length; i++){
+                    datos[i].id = i; // se asigna un id a cada huesped
                     var celda = $('.cont_tblcuerpo').find('#ct'+datos[i].cuartonro+moment(datos[i].fecha_inicia).weekday());
                     var diainiocup = moment(datos[i].fecha_inicia);
                     var diafinocup = moment(datos[i].fecha_fin);
                     if (_esFechaEntre(diainiocup, self.iniSem, self.finSem)){
                         _renderHuespedesSemana(celda, datos[i],diainiocup,diafinocup,1);
-                    }else if (moment(diainiocup).isBefore(self.iniSem) && 
-                              moment(diafinocup).isAfter(self.iniSem)){
+                    }else if (_esAntes(diainiocup,self.iniSem)&& 
+                              _esDespues(diafinocup,self.iniSem)){
                         diainiocup = moment(self.iniSem);
                         celda = $('.cont_tblcuerpo').find('#ct'+datos[i].cuartonro+''+diainiocup.weekday());
                         _renderHuespedesSemana(celda, datos[i],diainiocup,diafinocup,2);
@@ -408,8 +439,8 @@
                     if (_esFechaIgual(datos[i].fecha_inicia, diamos) ||
                         _esFechaIgual(datos[i].fecha_fin, diamos)) {
                         _renderHuespedesDia(celd, datos[i],diamos,1);
-                    }else if (moment(diamos).isBefore(datos[i].fecha_fin) && //Si diamostrado es antes de fechafin y diamostrado es mayor a fecha inicial
-                        moment(diamos).isAfter(datos[i].fecha_inicia)){
+                    }else if (_esAntes(diamos,datos[i].fecha_fin)&& //Si diamostrado es antes de fechafin y diamostrado es mayor a fecha inicial
+                              _esDespues(diamos, datos[i].fecha_inicia)){
                         _renderHuespedesDia(celd, datos[i],diamos,2);
                     }
                 }
@@ -428,11 +459,11 @@
             var f_fin = ff;
             var celda = cel;
             if (tipo===1){
-                while ((f_ini.isBefore(f_fin)||_esFechaIgual(f_ini,f_fin))&&
-                        f_ini.isBefore(self.finSem)){
-                    if (huesped.estado !== 4 && huesped.estado !== 5){// si el cuarto no esta pagado o es reserva no cumplida
+                while ((_esAntes(f_ini,f_fin)||_esFechaIgual(f_ini,f_fin))&&
+                        _esAntes(f_ini, self.finSem)){
+                    if (huesped.estado !== 4 && huesped.estado !== 5 && huesped.estado!==6 && huesped.estado!==7){// si el cuarto no esta pagado o es reserva no cumplida
                         celda.append(_createHuesped(huesped,f_ini));
-                    }else if (f_ini.isBefore(self.fechaActual)&&
+                    }else if (_esAntes(f_ini,self.fechaActual)&&
                               !_esFechaIgual(f_ini,self.fechaActual)){//Cualquier estado anterior al dia actual
                         celda.append(_createHuesped(huesped, f_ini));
                     }
@@ -440,7 +471,7 @@
                     celda = $('.cont_tblcuerpo').find('#ct'+huesped.cuartonro+''+f_ini.weekday());
                 }
             }else if (tipo===2){
-                while (f_ini.isBefore(f_fin)||_esFechaIgual(f_ini, f_fin)){
+                while (_esAntes(f_ini,f_fin)||_esFechaIgual(f_ini, f_fin)){
                     celda.append(_createHuesped(huesped, f_ini));
                     f_ini = moment(f_ini).add('day',1);
                     celda = $('.cont_tblcuerpo').find('#ct'+huesped.cuartonro+''+f_ini.weekday());
@@ -448,16 +479,16 @@
             }
         }
         
-        function _renderHuespedesDia(cel,datos,dia,tipo){
+        function _renderHuespedesDia(cel,huesped,dia,tipo){
             if (tipo===1){
-                if(datos.estado!==4 && datos.estado!==5 ){
-                    cel.append(_createHuesped(datos, dia));
-                }else if(dia.isBefore(self.fechaActual)&&
+                if(huesped.estado!==4 && huesped.estado!==5 && huesped.estado!==6 && huesped.estado!==7){
+                    cel.append(_createHuesped(huesped, dia));
+                }else if(_esAntes(dia,self.fechaActual)&&
                         !_esFechaIgual(dia,self.fechaActual)){
-                    cel.append(_createHuesped(datos, dia));
+                    cel.append(_createHuesped(huesped, dia));
                 }
             }else if (tipo ===2){
-                cel.append(_createHuesped(datos, dia));
+                cel.append(_createHuesped(huesped, dia));
             }
         }
         
@@ -473,7 +504,7 @@
                 cab.html(moment(ini).hour() + ':' + moment(ini).minute() +
                     ' - ' + moment(fin).hour() + ':' + moment(fin).minute());
                 img.addClass('f_medio');
-            }else if (moment(dia).isBefore(fin)&&
+            }else if (_esAntes(dia, fin)&&
                       _esFechaIgual(dia,ini)){
                 cab.html(moment(ini).hour() + ':' + moment(ini).minute());
                 img.addClass('pull-left f_inicia');
@@ -487,9 +518,6 @@
             div.append(txt);
             div.css(o.cssHuesped);
             div.data('data',data);
-            //~div.click(function(e){
-                //~o.clickHuesped.call(this,data);
-            //~});
             div.addClass(function() {
                 switch (data.estado) {
                     case 0:
@@ -497,8 +525,10 @@
                     case 1:
                         return 'ocupado'; // ocupado
                     case 2:
+                    case 6:
                         return 'mantenimiento'; // mantenimiento
                     case 3:
+                    case 7:
                         return 'bloqueado'; // bloqueado
                     case 4:
                         return 'pagado'; // pagado
@@ -508,7 +538,25 @@
                         return 'reservado';
                 }
             });
+            o.renderHuesped.call(this,data);
             return div;
+        }
+        
+        function _updateHuesped(huesped){
+            var celda = $('.cont_tblcuerpo').find('#ct'+huesped.cuartonro+moment(huesped.fecha_inicia).weekday());
+            var hue = $(celda).find('.evento');
+            var data = '';
+            for (i = 0; i < hue.length; i++){
+                if($(hue[i]).data('data').id === huesped.id ){
+                    data = $(hue[i]).data('data');
+                }
+            }
+            data.estadoasig = huesped.estadoasig;
+            _renderOcupados();
+        }
+        
+        function _removeHuesped(celda){
+            $(celda).find('.evento').remove();
         }
         
         function _removeOcupados(){
@@ -521,12 +569,14 @@
             var activo = false;
             var cuarSel = [];
             if (self.vista === 'semana'){
-                var celIni, celFin, siga=false;
+                var celIni, celFin, siga=false;//el siga es para evitar q se seleccione las celdas q contienen huespedes
                 
                 $('.celda').on('mousedown', function (e){
                     e.preventDefault();
                     if ($(this).find('.evento').length) {                        
                         siga=false;
+                        //~$('.marcado').removeClass('marcado'); 
+                        //~$(this).addClass('marcado');
                     }else{
                         activo = true;
                         siga = true;
@@ -551,6 +601,7 @@
                     if ($(this).find('.evento').length) { 
                         e.preventDefault();                       
                         siga=false;
+                        //~$('.marcado').removeClass('marcado'); 
                     }else{
                         activo = false;
                         celFin = this;        
@@ -568,6 +619,16 @@
                         $('.marcado').removeClass('marcado');
                         cuarSel = [];
                     }
+                });
+               $('.celcab').on('click', function(e){
+                    var fecha = _cellDate(this.cellIndex-1);
+                    self.vista = 'dia';
+                    _poneVista();
+                    self.diamostrado = fecha;
+                    self.x = self.diamostrado.weekday();
+                    _cabeceraDia();
+                    _desactivaHoy();
+                    _renderOcupados();
                 });
             }else if (self.vista === 'dia'){
                 $('.celdadia').on("mousedown", function(ev) {
@@ -605,10 +666,7 @@
                 });
             }
             
-            //~$('.evento').on('click', function(e){
-                //~var data = $(this).data('data');
-                //~o.clickHuesped.call(this,data);
-            //~});
+            
         }
         
         function _datosCuartos(celda){
@@ -623,10 +681,10 @@
         
         function _callSelectCelda(celdaini, celdafin, cuartos){
             if (self.vista === 'semana'){
-                var fecini = _cellDate(celdaini.cellIndex-1);
+                var fecini = _cellDate(celdaini.cellIndex-1);// el indice de las empieza en cero pero la celda room no cuenta
                 var fecfin = _cellDate(celdafin.cellIndex-1);
-                if((fecini.isAfter(self.fechaActual)&&_esFechaIgual(self.fechaActual,fecfin))||
-                        (fecfin.isAfter(self.fechaActual)&&_esFechaIgual(self.fechaActual,fecini))){
+                if((_esDespues(fecini,self.fechaActual)&&_esFechaIgual(self.fechaActual,fecfin))||
+                        _esDespues(fecfin,self.fechaActual)&&_esFechaIgual(self.fechaActual,fecini)){
                     o.selectCelda.call(self, fecini, fecfin, cuartos);
                 }else if (_esFechaIgual(self.fechaActual,fecini)&&
                     _esFechaIgual(self.fechaActual,fecfin)){//si las fechas de inicio y fin coinciden con la actual
@@ -637,7 +695,7 @@
                 }
             }else if (self.vista === 'dia'){
                 if(_esFechaIgual(self.diamostrado,self.fechaActual)||
-                    self.diamostrado.isAfter(self.fechaActual)){
+                    _esDespues(self.diamostrado,self.fechaActual)){
                     o.selectCelda.call(self, self.diamostrado, self.diamostrado, cuartos);
                 }
             }
@@ -652,6 +710,14 @@
                 return moment(self.iniSem).add('day', idCelda);
             }
         }
+        
+        //~function _filtro(tipoFiltro){
+            //~_renderOcupados();// se vuelven a renderizar por si se hayan eliminado anteriores
+            //~if (tipoFiltro === 0){
+                //~
+            //~}
+            //~
+        //~}
     };
     
     $.fn[nombrePlugin]=function(metodo){
@@ -665,3 +731,4 @@
         }
     };
 })(jQuery);
+
