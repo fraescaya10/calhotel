@@ -51,8 +51,15 @@
         var self = el;
         self.c = 0; // Para suma de semanas
         self.x = 0; // Para suma de días
+        self.libres = 0;
         self.vista = o.vistadef;     
         self.totcuartos = o.rooms.length;
+        self.ocupados = 0;
+        self.libres = 0;
+        self.reservados = 0;
+        self.mantenimiento = 0;
+        self.bloqueados = 0;
+        self.pagados = 0;
         self.fechaActual = moment();
         _maquetar();
         
@@ -71,7 +78,6 @@
          
         m.getVista = function(){ 
             /*puede incluir nombre, titulo, inicio, fin*/
-            console.log(self.vista);     
             return self.vista; //nombre de la vista
         };
         m.cambiaVista = function(vista){ // vista -> 'dia' o 'semana'
@@ -84,7 +90,21 @@
         m.updateHuesped = function(huesped){
             _updateHuesped(huesped);
         };
-        
+        //~m.getNumOcupados = function(){
+            //~return _getNumOcupados();
+        //~};
+        //~m.getNumReservados = function(){
+            //~return _getNumReservados();
+        //~};        
+        //~m.getNumMantenimiento = function(){
+            //~return _getNumMantenimiento();
+        //~};
+        //~m.getNumBloqueados = function(){
+            //~return _getNumBloqueados();
+        //~};
+        //~m.getNumLibres = function(){
+            //~return _getNumLibres();
+        //~};
                 
         //**************************** METODOS PRIVADOS ***********************
         function _maquetar(){
@@ -100,7 +120,6 @@
             if(self.vista === 'semana'){
                 _vistaSemana();
                 _callEvents();
-                
             }else if(self.vista === 'dia'){
                 _vistaDia();
                 _callEvents();
@@ -212,6 +231,8 @@
                 var h = $("<th class='celcab' id='dia" + i + "'></th>");
                 tr.append(h);
             }
+            
+            tr.append("<th class='calcabvac'></th>");
             thead.append(tr);
             tblh.append(thead);
             return tblh;        
@@ -239,7 +260,6 @@
         }
         
         function _vistaDia(){
-            //~console.log('Llamada a _vistaDia');
             self.cont_secundario.find('.contenedor-tabla').remove();
             var tbldia = _maquetarTbl(_tblCabeceraDia(), _tblCuerpoDia());
             self.cont_secundario.append(tbldia);
@@ -287,6 +307,7 @@
             _actualizaCabecerasTit();
             _desactivaHoy();
             _renderOcupados();
+            //~_actualizaContadores();
         }
         
         function _actualizaCabecerasTit(){
@@ -301,6 +322,15 @@
                 self.diamostrado = moment(self.iniSem).add('day', self.x);
                 _cabeceraDia();
             }
+        }
+        
+        function _actualizaContadores(){
+            console.log('Ocupados: '+_getNumOcupados());
+            console.log('Reservados: '+_getNumReservados());
+            console.log('Mantenimiento: '+_getNumMantenimiento());
+            console.log('Bloqueados: '+_getNumBloqueados());
+            console.log('Libres: '+_getNumLibres());
+            console.log('Pagados: '+_getNumPagados());
         }
         
         function _cabeceraDia(){
@@ -414,8 +444,31 @@
             return fecha.startOf('week');
         }
         
+        //~function _numeroHabit(estado){
+            //~
+            //~if (!_esFechaEntre(self.fechaActual, self.iniSem, self.finSem)){
+                //~if (estado === 0){
+                    //~self.reservados = self.reservados + 1;
+                //~}else if (estado === 1){
+                    //~self.ocupados = self.ocupados + 1;
+                //~}else if (estado === 2 || estado === 6){
+                    //~self.mantenimiento = self.mantenimiento + 1;
+                //~}else if (estado === 3 || estado === 7){
+                    //~self.bloqueados = self.bloqueados + 1;
+                //~}else if (estado === 4){
+                    //~self.pagados = self.pagados + 1;
+                //~}
+            //~}
+        //~}
+        
         function _renderOcupados(){
             _removeOcupados();
+            //~self.ocupados = 0;
+            //~self.reservados = 0;
+            //~self.mantenimiento = 0;
+            //~self.libres = 0;
+            //~self.bloqueados = 0;
+            //~self.pagados = 0;
             var datos = o.datosroom;
             if(self.vista === 'semana'){
                 for (i = 0; i < datos.length; i++){
@@ -425,11 +478,13 @@
                     var diafinocup = moment(datos[i].fecha_fin);
                     if (_esFechaEntre(diainiocup, self.iniSem, self.finSem)){
                         _renderHuespedesSemana(celda, datos[i],diainiocup,diafinocup,1);
+                        //~_numeroHabit(datos[i].estado);
                     }else if (_esAntes(diainiocup,self.iniSem)&& 
                               _esDespues(diafinocup,self.iniSem)){
                         diainiocup = moment(self.iniSem);
                         celda = $('.cont_tblcuerpo').find('#ct'+datos[i].cuartonro+''+diainiocup.weekday());
                         _renderHuespedesSemana(celda, datos[i],diainiocup,diafinocup,2);
+                        //~_numeroHabit(datos[i].estado);
                     }
                 }
             }else if (self.vista === 'dia'){
@@ -439,9 +494,11 @@
                     if (_esFechaIgual(datos[i].fecha_inicia, diamos) ||
                         _esFechaIgual(datos[i].fecha_fin, diamos)) {
                         _renderHuespedesDia(celd, datos[i],diamos,1);
+                        _numeroHabit(datos[i].estado);
                     }else if (_esAntes(diamos,datos[i].fecha_fin)&& //Si diamostrado es antes de fechafin y diamostrado es mayor a fecha inicial
                               _esDespues(diamos, datos[i].fecha_inicia)){
                         _renderHuespedesDia(celd, datos[i],diamos,2);
+                        _numeroHabit(datos[i].estado);
                     }
                 }
             }
@@ -461,7 +518,8 @@
             if (tipo===1){
                 while ((_esAntes(f_ini,f_fin)||_esFechaIgual(f_ini,f_fin))&&
                         _esAntes(f_ini, self.finSem)){
-                    if (huesped.estado !== 4 && huesped.estado !== 5 && huesped.estado!==6 && huesped.estado!==7){// si el cuarto no esta pagado o es reserva no cumplida
+                    if (huesped.estado !== 4 && huesped.estado !== 5 && 
+                        huesped.estado!==6 && huesped.estado!==7){// si el cuarto no esta pagado o es reserva no cumplida
                         celda.append(_createHuesped(huesped,f_ini));
                     }else if (_esAntes(f_ini,self.fechaActual)&&
                               !_esFechaIgual(f_ini,self.fechaActual)){//Cualquier estado anterior al dia actual
@@ -575,8 +633,6 @@
                     e.preventDefault();
                     if ($(this).find('.evento').length) {                        
                         siga=false;
-                        //~$('.marcado').removeClass('marcado'); 
-                        //~$(this).addClass('marcado');
                     }else{
                         activo = true;
                         siga = true;
@@ -601,7 +657,6 @@
                     if ($(this).find('.evento').length) { 
                         e.preventDefault();                       
                         siga=false;
-                        //~$('.marcado').removeClass('marcado'); 
                     }else{
                         activo = false;
                         celFin = this;        
@@ -620,7 +675,13 @@
                         cuarSel = [];
                     }
                 });
-               $('.celcab').on('click', function(e){
+                
+                $('.celcab').on('mousedown', function (e){
+                    $(this).addClass('marcadosup');
+                });
+                
+                $('.celcab').on('mouseup', function (e){
+                    $('.marcadosup').removeClass('marcadosup');
                     var fecha = _cellDate(this.cellIndex-1);
                     self.vista = 'dia';
                     _poneVista();
@@ -629,6 +690,7 @@
                     _cabeceraDia();
                     _desactivaHoy();
                     _renderOcupados();
+                    _actualizaContadores();
                 });
             }else if (self.vista === 'dia'){
                 $('.celdadia').on("mousedown", function(ev) {
@@ -665,8 +727,6 @@
                     }
                 });
             }
-            
-            
         }
         
         function _datosCuartos(celda){
@@ -711,12 +771,24 @@
             }
         }
         
-        //~function _filtro(tipoFiltro){
-            //~_renderOcupados();// se vuelven a renderizar por si se hayan eliminado anteriores
-            //~if (tipoFiltro === 0){
-                //~
-            //~}
-            //~
+        //~function _getNumOcupados(){
+            //~return self.ocupados;
+        //~}
+        //~function _getNumReservados(){
+            //~return self.reservados;
+        //~}       
+        //~function _getNumMantenimiento(){
+            //~return self.mantenimiento;
+        //~}
+        //~function _getNumBloqueados(){
+            //~return self.bloqueados;
+        //~}
+        //~function _getNumPagados(){
+            //~return self.pagados;
+        //~}
+        //~function _getNumLibres(){
+            //~self.libres = self.totcuartos - (self.ocupados + self.reservados + self.mantenimiento + self.bloqueados); 
+            //~return self.libres;
         //~}
     };
     
@@ -731,4 +803,3 @@
         }
     };
 })(jQuery);
-
