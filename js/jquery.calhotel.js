@@ -1,4 +1,4 @@
-//~;;
+;;
 (function($){
     var nombrePlugin='calhotel'; 
     
@@ -53,14 +53,9 @@
         self.x = 0; // Para suma de días
         self.libres = 0;
         self.vista = o.vistadef;     
-        self.totcuartos = o.rooms.length;
-        self.ocupados = 0;
-        self.libres = 0;
-        self.reservados = 0;
-        self.mantenimiento = 0;
-        self.bloqueados = 0;
-        self.pagados = 0;
+        self.totcuartos = o.rooms.length;        
         self.fechaActual = moment();
+        self.actualOcupados = [];
         _maquetar();
         
         //**************************** METODOS PUBLICOS ***********************
@@ -90,21 +85,10 @@
         m.updateHuesped = function(huesped){
             _updateHuesped(huesped);
         };
-        //~m.getNumOcupados = function(){
-            //~return _getNumOcupados();
-        //~};
-        //~m.getNumReservados = function(){
-            //~return _getNumReservados();
-        //~};        
-        //~m.getNumMantenimiento = function(){
-            //~return _getNumMantenimiento();
-        //~};
-        //~m.getNumBloqueados = function(){
-            //~return _getNumBloqueados();
-        //~};
-        //~m.getNumLibres = function(){
-            //~return _getNumLibres();
-        //~};
+        
+        m.getCuartoHuesped = function(ser_codigo){
+            return _getCuartoHuesped(ser_codigo);
+        }
                 
         //**************************** METODOS PRIVADOS ***********************
         function _maquetar(){
@@ -200,7 +184,6 @@
         }
         
         function _vistaSemana(){
-            //~console.log('Llamada a _vistaSemana');
             self.cont_secundario.find('.contenedor-tabla').remove();
             var tblsem = _maquetarTbl(_tblCabeceraSem(), _tblCuerpoSem());
             self.cont_secundario.append(tblsem);
@@ -307,7 +290,6 @@
             _actualizaCabecerasTit();
             _desactivaHoy();
             _renderOcupados();
-            //~_actualizaContadores();
         }
         
         function _actualizaCabecerasTit(){
@@ -324,14 +306,6 @@
             }
         }
         
-        function _actualizaContadores(){
-            console.log('Ocupados: '+_getNumOcupados());
-            console.log('Reservados: '+_getNumReservados());
-            console.log('Mantenimiento: '+_getNumMantenimiento());
-            console.log('Bloqueados: '+_getNumBloqueados());
-            console.log('Libres: '+_getNumLibres());
-            console.log('Pagados: '+_getNumPagados());
-        }
         
         function _cabeceraDia(){
             $('.celcabdia').html(self.diamostrado.format('dddd').toUpperCase());
@@ -443,33 +417,11 @@
             var fecha = moment(self.fechaActual).add('week', self.c);
             return fecha.startOf('week');
         }
-        
-        //~function _numeroHabit(estado){
-            //~
-            //~if (!_esFechaEntre(self.fechaActual, self.iniSem, self.finSem)){
-                //~if (estado === 0){
-                    //~self.reservados = self.reservados + 1;
-                //~}else if (estado === 1){
-                    //~self.ocupados = self.ocupados + 1;
-                //~}else if (estado === 2 || estado === 6){
-                    //~self.mantenimiento = self.mantenimiento + 1;
-                //~}else if (estado === 3 || estado === 7){
-                    //~self.bloqueados = self.bloqueados + 1;
-                //~}else if (estado === 4){
-                    //~self.pagados = self.pagados + 1;
-                //~}
-            //~}
-        //~}
-        
+                
         function _renderOcupados(){
             _removeOcupados();
-            //~self.ocupados = 0;
-            //~self.reservados = 0;
-            //~self.mantenimiento = 0;
-            //~self.libres = 0;
-            //~self.bloqueados = 0;
-            //~self.pagados = 0;
             var datos = o.datosroom;
+            self.actualOcupados = [];
             if(self.vista === 'semana'){
                 for (i = 0; i < datos.length; i++){
                     datos[i].id = i; // se asigna un id a cada huesped
@@ -478,30 +430,35 @@
                     var diafinocup = moment(datos[i].fecha_fin);
                     if (_esFechaEntre(diainiocup, self.iniSem, self.finSem)){
                         _renderHuespedesSemana(celda, datos[i],diainiocup,diafinocup,1);
-                        //~_numeroHabit(datos[i].estado);
+                        self.actualOcupados.push(datos[i]);
                     }else if (_esAntes(diainiocup,self.iniSem)&& 
                               _esDespues(diafinocup,self.iniSem)){
                         diainiocup = moment(self.iniSem);
                         celda = $('.cont_tblcuerpo').find('#ct'+datos[i].cuartonro+''+diainiocup.weekday());
                         _renderHuespedesSemana(celda, datos[i],diainiocup,diafinocup,2);
-                        //~_numeroHabit(datos[i].estado);
+                        self.actualOcupados.push(datos[i]);
                     }
                 }
             }else if (self.vista === 'dia'){
                 var diamos = self.diamostrado;
                 for (i = 0; i < datos.length; i++){
+                    datos[i].id = i;
                     var celd = $('.cont_tblcuerpo').find('#ct'+datos[i].cuartonro);
                     if (_esFechaIgual(datos[i].fecha_inicia, diamos) ||
                         _esFechaIgual(datos[i].fecha_fin, diamos)) {
                         _renderHuespedesDia(celd, datos[i],diamos,1);
-                        _numeroHabit(datos[i].estado);
+                        self.actualOcupados.push(datos[i]);
                     }else if (_esAntes(diamos,datos[i].fecha_fin)&& //Si diamostrado es antes de fechafin y diamostrado es mayor a fecha inicial
                               _esDespues(diamos, datos[i].fecha_inicia)){
                         _renderHuespedesDia(celd, datos[i],diamos,2);
-                        _numeroHabit(datos[i].estado);
+                        self.actualOcupados.push(datos[i]);
                     }
                 }
             }
+            _huespedEvents();
+        }
+        
+        function _huespedEvents(){
             $('.evento').on('click', function(e){
                 var data = $(this).data('data');
                 o.clickHuesped.call(this,data);
@@ -517,7 +474,7 @@
             var celda = cel;
             if (tipo===1){
                 while ((_esAntes(f_ini,f_fin)||_esFechaIgual(f_ini,f_fin))&&
-                        _esAntes(f_ini, self.finSem)){
+                        (_esAntes(f_ini, self.finSem)||_esFechaIgual(f_ini, self.finSem))){
                     if (huesped.estado !== 4 && huesped.estado !== 5 && 
                         huesped.estado!==6 && huesped.estado!==7){// si el cuarto no esta pagado o es reserva no cumplida
                         celda.append(_createHuesped(huesped,f_ini));
@@ -596,7 +553,7 @@
                         return 'reservado';
                 }
             });
-            o.renderHuesped.call(this,data);
+            o.renderHuesped.call(this,data); //llamado a renderHuesped
             return div;
         }
         
@@ -604,7 +561,7 @@
             var celda = $('.cont_tblcuerpo').find('#ct'+huesped.cuartonro+moment(huesped.fecha_inicia).weekday());
             var hue = $(celda).find('.evento');
             var data = '';
-            for (i = 0; i < hue.length; i++){
+            for (i = 0; i < hue.length; i++){ // por si la celda tenga mas de un evento
                 if($(hue[i]).data('data').id === huesped.id ){
                     data = $(hue[i]).data('data');
                 }
@@ -690,7 +647,6 @@
                     _cabeceraDia();
                     _desactivaHoy();
                     _renderOcupados();
-                    _actualizaContadores();
                 });
             }else if (self.vista === 'dia'){
                 $('.celdadia').on("mousedown", function(ev) {
@@ -771,25 +727,16 @@
             }
         }
         
-        //~function _getNumOcupados(){
-            //~return self.ocupados;
-        //~}
-        //~function _getNumReservados(){
-            //~return self.reservados;
-        //~}       
-        //~function _getNumMantenimiento(){
-            //~return self.mantenimiento;
-        //~}
-        //~function _getNumBloqueados(){
-            //~return self.bloqueados;
-        //~}
-        //~function _getNumPagados(){
-            //~return self.pagados;
-        //~}
-        //~function _getNumLibres(){
-            //~self.libres = self.totcuartos - (self.ocupados + self.reservados + self.mantenimiento + self.bloqueados); 
-            //~return self.libres;
-        //~}
+        function _getCuartoHuesped(ser_codigo){
+            var l = o.rooms.length;
+            var room = '';
+            for (var i = 0; i < l; i++){
+                if(o.rooms[i].ser_codigo === ser_codigo){
+                    room = o.rooms[i];
+                }
+            }
+            return room;
+        }
     };
     
     $.fn[nombrePlugin]=function(metodo){
@@ -803,3 +750,5 @@
         }
     };
 })(jQuery);
+
+
