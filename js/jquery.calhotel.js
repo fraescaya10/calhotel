@@ -1,4 +1,4 @@
-;;
+//~;;
 (function($){
     var nombrePlugin='calhotel'; 
     
@@ -139,9 +139,13 @@
                 _poneVista();
             });
             bDia.click(function(e) {
-                self.x = 0;
-                self.vista = 'dia';
-                _poneVista();
+                if (_esFechaEntre(self.fechaActual,self.iniSem,self.finSem)){
+                    _setDiaSelec(self.fechaActual);
+                }else{
+                    self.x = 0;
+                    self.vista = 'dia';
+                    _poneVista();
+                }
             });
             //Agregando los botones
             tdIzq.append(bAnt);
@@ -196,6 +200,9 @@
             var divtbl = _creaDiv('contenedor-tabla');
             var cabecera = _creaDiv('cont_tblcabecera');
             var cuerpo = _creaDiv('cont_tblcuerpo');
+            if (self.totcuartos === undefined){
+               cuerpo.addClass('tblvacia');
+            }
             cabecera.append(tblcab);
             cuerpo.append(tblcue);
             divtbl.append(cabecera);
@@ -224,19 +231,21 @@
         function _tblCuerpoSem(){
             var tblc = $("<table></table>");
             var tbody = $("<tbody></tbody>");
-            for (var i = 0; i < self.totcuartos; i++) {
-                var tr = $("<tr class='filatbl'></tr>");
-                tr.attr('id', 'fila' + i);                
-                var tdr = $("<td class='celcab celroom' id='r" + o.rooms[i].cuartonro + "'></td>");
-                tdr.html(o.rooms[i].numdescri);
-                tdr.data('cuarto',o.rooms[i]);
-                tr.append(tdr);
-                for (var c = 0; c < 7; c++) {
-                    var tdc = $("<td class='celda'></td>");
-                    tdc.attr('id', 'ct' + o.rooms[i].cuartonro + '' + c);
-                    tr.append(tdc);
+            if (self.totcuartos > 0){
+                for (var i = 0; i < self.totcuartos; i++) {
+                    var tr = $("<tr class='filatbl'></tr>");
+                    tr.attr('id', 'fila' + i);                
+                    var tdr = $("<td class='celcab celroom' id='r" + o.rooms[i].cuartonro + "'></td>");
+                    tdr.html(o.rooms[i].numdescri);
+                    tdr.data('cuarto',o.rooms[i]);
+                    tr.append(tdr);
+                    for (var c = 0; c < 7; c++) {
+                        var tdc = $("<td class='celda'></td>");
+                        tdc.attr('id', 'ct' + o.rooms[i].cuartonro + '' + c);
+                        tr.append(tdc);
+                    }
+                    tbody.append(tr);
                 }
-                tbody.append(tr);
             }
             tblc.append(tbody);
             return tblc;
@@ -270,17 +279,19 @@
         function _tblCuerpoDia(){
             var table = $("<table></table>");
             var tbody = $("<tbody></tbody>");
-            for (var i = 0; i < self.totcuartos; i++) {
-                var tr = $("<tr class='filatbldia'></tr>");
-                tr.attr('id', 'filad' + i);
-                var tdr = $("<td class='celcab celroom'id='r" + o.rooms[i].cuartonro + "'></td>");
-                tdr.data('cuarto',o.rooms[i]);
-                var tdc = $("<td class='celdadia'></td>");
-                tdr.html(o.rooms[i].numdescri);
-                tdc.attr('id', 'ct' + o.rooms[i].cuartonro);
-                tr.append(tdr);
-                tr.append(tdc);
-                tbody.append(tr);
+            if (self.totcuartos > 0){
+                for (var i = 0; i < self.totcuartos; i++) {
+                    var tr = $("<tr class='filatbldia'></tr>");
+                    tr.attr('id', 'filad' + i);
+                    var tdr = $("<td class='celcab celroom'id='r" + o.rooms[i].cuartonro + "'></td>");
+                    tdr.data('cuarto',o.rooms[i]);
+                    var tdc = $("<td class='celdadia'></td>");
+                    tdr.html(o.rooms[i].numdescri);
+                    tdc.attr('id', 'ct' + o.rooms[i].cuartonro);
+                    tr.append(tdr);
+                    tr.append(tdc);
+                    tbody.append(tr);
+                }
             }
             table.append(tbody);
             return table;
@@ -640,13 +651,7 @@
                 $('.celcab').on('mouseup', function (e){
                     $('.marcadosup').removeClass('marcadosup');
                     var fecha = _cellDate(this.cellIndex-1);
-                    self.vista = 'dia';
-                    _poneVista();
-                    self.diamostrado = fecha;
-                    self.x = self.diamostrado.weekday();
-                    _cabeceraDia();
-                    _desactivaHoy();
-                    _renderOcupados();
+                    _setDiaSelec(fecha);
                 });
             }else if (self.vista === 'dia'){
                 $('.celdadia').on("mousedown", function(ev) {
@@ -683,6 +688,16 @@
                     }
                 });
             }
+        }
+        
+        function _setDiaSelec(fecha){
+            self.vista = 'dia';
+            _poneVista();
+            self.diamostrado = fecha;
+            self.x = self.diamostrado.weekday();
+            _cabeceraDia();
+            _desactivaHoy();
+            _renderOcupados();
         }
         
         function _datosCuartos(celda){
@@ -750,5 +765,4 @@
         }
     };
 })(jQuery);
-
 

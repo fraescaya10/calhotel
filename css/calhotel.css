@@ -1,12 +1,12 @@
 *{
     margin: 0;
     padding: 0;
-    text-align: center;
     font-size: 1em;
 }
 
 .contenedor-principal,.contenedor-secundario{
-    margin: 2em;
+    margin: 0.5em;
+    text-align: center;
 }
 
 .datos-globales,.tbl-botones, .contenedor-tabla,.tbldiasAgenda{
@@ -41,6 +41,10 @@
 }
 .cont_tblcabecera{
     overflow: hidden;
+}
+
+.tblvacia{
+   border: 1px solid #C0D0D6; 
 }
 
 .filatbl, .filatbldia{
@@ -86,6 +90,7 @@
 .marcado {background-color: rgba(255,192,203,0.5);}
 .marcadosup{background-color:rgba(144, 238, 144, 0.5);}
 .diactual{background-color: rgba(30,144,255,0.1);}
+    
 
 .f_inicia{color:blue;}
 .f_medio{color:#8B6914;}
