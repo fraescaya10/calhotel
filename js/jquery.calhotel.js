@@ -56,6 +56,7 @@
         self.totcuartos = o.rooms.length;        
         self.fechaActual = moment();
         self.actualOcupados = [];
+        self.titulo = '';
         _maquetar();
         
         //**************************** METODOS PUBLICOS ***********************
@@ -73,11 +74,17 @@
          
         m.getVista = function(){ 
             /*puede incluir nombre, titulo, inicio, fin*/
-            return self.vista; //nombre de la vista
+            return {
+                'vista': self.vista,
+                'titulo': self.titulo
+            }
         };
         m.cambiaVista = function(vista){ // vista -> 'dia' o 'semana'
-            self.vista = vista;
-            _poneVista();
+            if (vista === 'semana'){
+                _clickSemana();
+            }else if(vista === 'dia'){
+                _clickDia();
+            }
         };
         m.renderOcupados = function (){
             _renderOcupados();
@@ -134,18 +141,10 @@
             var bSem = _creaBtn(o.btsup,'btnSemana',o.txtIzq[0]);
             var bDia = _creaBtn(o.btsup,'btnDia', o.txtIzq[1]);
             bSem.click(function(e) {
-                self.c = 0;
-                self.vista = 'semana';
-                _poneVista();
+                _clickSemana();
             });
             bDia.click(function(e) {
-                if (_esFechaEntre(self.fechaActual,self.iniSem,self.finSem)){
-                    _setDiaSelec(self.fechaActual);
-                }else{
-                    self.x = 0;
-                    self.vista = 'dia';
-                    _poneVista();
-                }
+                _clickDia();
             });
             //Agregando los botones
             tdIzq.append(bAnt);
@@ -311,6 +310,7 @@
                     $('#dia' + i).html(da.format('ddd ') + da.date());
                 }
                 $('#titFecha').text(_devuelveSemana());
+                self.titulo = $('#titFecha').text();
             }else if (self.vista === 'dia'){
                 self.diamostrado = moment(self.iniSem).add('day', self.x);
                 _cabeceraDia();
@@ -321,6 +321,7 @@
         function _cabeceraDia(){
             $('.celcabdia').html(self.diamostrado.format('dddd').toUpperCase());
             $('#titFecha').text(self.diamostrado.format('MMMM D, YYYY'));
+            self.titulo = $('#titFecha').text();
         }
         
         function _siguiente(){
@@ -694,6 +695,22 @@
             }
         }
         
+        function _clickSemana(){
+            self.c = 0;
+            self.vista = 'semana';
+            _poneVista();
+        }
+        
+        function _clickDia(){
+            if (_esFechaEntre(self.fechaActual,self.iniSem,self.finSem)){
+                _setDiaSelec(self.fechaActual);
+            }else{
+                self.x = 0;
+                self.vista = 'dia';
+                _poneVista();
+            }
+        }
+        
         function _setDiaSelec(fecha){
             self.vista = 'dia';
             _poneVista();
@@ -756,6 +773,7 @@
             }
             return room;
         }
+        
     };
     
     $.fn[nombrePlugin]=function(metodo){
