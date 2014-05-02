@@ -645,13 +645,17 @@
                 });
                 
                 $('.celcab').on('mousedown', function (e){
-                    $(this).addClass('marcadosup');
+                    if (this.cellIndex > 0){
+                        $(this).addClass('marcadosup');
+                    }
                 });
                 
                 $('.celcab').on('mouseup', function (e){
-                    $('.marcadosup').removeClass('marcadosup');
-                    var fecha = _cellDate(this.cellIndex-1);
-                    _setDiaSelec(fecha);
+                    if (this.cellIndex > 0){
+                        $('.marcadosup').removeClass('marcadosup');
+                         var fecha = _cellDate(this.cellIndex-1);
+                        _setDiaSelec(fecha);
+                    }
                 });
             }else if (self.vista === 'dia'){
                 $('.celdadia').on("mousedown", function(ev) {
@@ -765,4 +769,3 @@
         }
     };
 })(jQuery);
-
